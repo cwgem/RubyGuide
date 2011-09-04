@@ -1,0 +1,250 @@
+= Ruby Security Model =
+
+The Ruby security model was established with the following two differing goals in mind:
+
+.Safeguard External Resources
+
+When dealing with external input data with regards to external resources,
+it is important that the program run with the original design intentions
+in mind. For example, a malicious query has the potential to modify files
+or run system commands. With this in mind such protection is critical to
+ensuring the integrity of external resources.
+
+.Running Untrusted Code
+
+This means ensuring that untrusted code is run in an environment isolated
+from other critical data (sandbox). However the current implementation of
+Ruby does not offer complete protection. Please refer to 
+<<safe-level-4-issues,Safe Level 4 Issues>> for more information.
+
+== Object Flags ==
+
+Ruby objects contain `tainted` and `untrusted` flags.
+
+=== tainted ===
+
+The `tainted` flag is meant to indicate that an object is contaminated,
+and is utilized to protect external resources. Objects without the 
+`tainted` flag set are referred to as "contaminated objects" and those
+without the flag are referred to as "uncontaminated objects".
+
+This flag is set under the following circumstances:
+
+* The object is created from external data (IO, command line options,
+  environment variables, etc). An exception to this is the `PATH`
+  environment variable, which is only considered contaminated if it
+  referrers to an insecure world writeable path. If any of a 
+  directory's parent directories are world writeable, the directory
+  itself will also be considered insecure.
+* The object is created during safe level 3 and higher
+* The object is created from another contaminated object
+* The `Object#taint` method was called on the object
+
+It is also possible to remove the flag using the `Object#untaint`
+method.
+
+`Object#tainted?` can be used to check if the `tainted` flag is set.
+It will return `true` if it is set, and `false` if it is not.
+
+=== untrusted ===
+
+The `untrusted` flag is meant to indicate that an object was created 
+by untrusted code, and is often used for running untrusted code in a
+sandboxed environment. Objects with the `untrusted` flag set are 
+referred to as "untrusted objects", and those without the flag set are
+referred to as "trusted objects".
+
+This flag is set under the following circumstances:
+
+* The object is created during safe level 3 and higher
+* The object is created from another untrusted object
+* The `Object#untrust` method was called on the object
+
+It is also possible to remove the flag using the `Object#trust` method.
+
+`Object#untrusted?` can be used to check if the `untrusted` flag is set.
+It will return `true` if it is set, and `false` if it is not.
+
+== Safe Levels ==
+
+Ruby's security checks are regulated through the safe level. The safe
+level is set via the thread local `$SAFE` variable. When a thread is
+created, it will inherit the parent thread's `$SAFE` setting.
+
+The default is safe level 0. Ruby's `-T` option can also be used to set
+the safe level through the command line.
+
+`$SAFE` cannot be used set to a lower level:
+
+[source,console]
+$ ruby -e '$SAFE = 1; $SAFE = 0'
+-e:1:in `<main>': tried to downgrade safe level from 1 to 0 (SecurityError)
+
+When `$SAFE` is set inside a `Proc` object block, the previous value will
+be restored after the calling the object:
+
+[source,console]
+$ ruby -e 'lambda { $SAFE = 1 }.call; p $SAFE'
+0
+
+For each safe level, the checks below are run. If a prohibited operation
+is attempted, a `SecurityError` exception will be thrown.
+
+=== Level 0 ===
+
+This is the default safe level.
+
+==== Prohibited Operations
+
+There are no prohibited actions in level 0.
+
+=== Level 1 ===
+
+Level 1 is meant to protect external resources from malicious external
+data, while keeping the original design intentions of the program in mind.
+
+==== Prohibited Operations ====
+
+* Calling the following methods with contaminated strings as arguments:
+- `Dir`, `IO`, `File`, `FileTest` class and instance methods
++
+[source,console]
+$ ruby -e '$SAFE = 1; open(ARGV[0])' foobar
+-e:1:in `initialize': Insecure operation - initialize (SecurityError)
+from -e:1:in `open'
+from -e:1
++
+- File test operator usage and file modification time comparison
+- Running external commands (system, exec, \`\`)
+- eval (Please also see <<safe-level-4,Level 4>>'s description)
+- Top level `load` (The second level wrap argument can be used to get
+   around this)
+- require
+- trap
+- Other operations related to external data
+* Running external commands (Including those in dangerous directories
+  included in `PATH`)
+
+=== Level 2 ===
+
+==== Prohibited Operations ====
+
+The following operations, including those in level 1, are prohibited:
+
+* `Dir.chdir`, `Dir.chroot`, `Dir.mkdir`, `Dir.rmdir`
+* `File.chown`, `File.chmod`, `File.umask`, `File.truncate`, `File#lstat` 
+  `File#chmod`, `File#chown`, `File#delete`, `File#unlink`, 
+  `File#truncate`,`File#flock`, and all `FileTest` module methods
+* `IO#ioctl`, `IO#fcntl`
+* `Process.fork`, `Process.setpgid`, `Process.setsid`,
+  `Process.setpriority`,`Process.egid=`, `Process.kill`
+* `load` using a dangerous path
+* `load` using contaminated strings as arguments (even if wrapped)
+* `syscall`
+* `exit!`
+* `trap`
+
+=== Level 3 ===
+
+Level 3 is meant to protect against the execution of untrusted code.
+All objects created while this level is in effect are automatically
+flagged as `tainted` and `untrusted`.
+
+==== Prohibited Operations ====
+
+The following operations, including those in level 2, are prohibited:
+
+* `Object#untaint`
+* `Object#trust`
+
+[[safe-level-4]]
+=== Level 4 ===
+
+Level 4 is meant to run untrusted code in a safe environment. However,
+the feature is not completely perfect. Please see
+<<safe-level-4-issues,Safe Level 4 Issues>> for more information.
+
+In this level, all unsafe operations are prohibited, so even the level
+3 usage of `eval` with contaminated strings as arguments is allowed.
+
+==== Prohibited Operations
+
+The following operations, including those in level 3 (`eval` excluded), 
+are prohibited:
+
+* `Object#taint`
+* `Object#untrust`
+* Top level definition modification(`autoload`,`load`,`include`)
+* Method redefinition
+* `Object` class definition modification
+* Modification of trusted classes and modules, as well as their values
+* Changing the state of trusted objects
+* Modification of global variables
+* Processing trusted `IO` and `File` objects
+* `IO` targeted output
+* Program termination (`exit`, `abort`) ("out of memory" and "fatal"
+  conditions cannot be prevented)
+* Operations on outside `Thread` based classes, as well as `Thread#[]`
+  calls on other threads
+* `ObjectSpace._id2ref`
+* `ObjectSpace.each_object`
+* Modification of environment variables
+* `srand`
+* Any other operations related to external resources
+
+== Guidelines Concerning `untaint` ==
+
+=== Application Level `untaint` ===
+
+For accessing external resources using contaminated data in safe level 1
+and above, `Object#untaint` must be used to remove the `tainted` flag.
+
+However, before running `untaint` on the object, it is important to
+ensure that usage of the object will not produce unintended side-effects.
+
+=== Library Level `untaint` ===
+
+Users will often need to run methods with untainted data as arguments with
+a certain intention in mind. Given this requirement, it is often desirable 
+on the library level to `untaint` internal data to execute operations as 
+the user intended.
+
+In order to prevent the library user from calling `untaint` on objects
+created internally by the library, it is necessary to `untaint` these
+objects on the library side as well. Failure to do so will result in the
+library being unusable at level 1 and above.
+
+== Extension Library Creation Guidelines ==
+
+When creating extension libraries, the following points must be taken
+into consideration:
+
+=== Prohibiting Operations At Safe Level 4 ===
+
+At safe level 4, access to external resources should be prohibited. This
+restriction can be implemented using `rb_secure()`.
+
+[source,c]
+static VALUE
+readline_readline(int argc, VALUE *argv, VALUE self)
+{
+  ...
+  rb_secure(4);
+
+=== `taint` and External Data
+
+Objects that are created from external data, such as from a database,
+should be marked as `tainted` using `OBJ_TAINT`. In the case of
+strings, this can be done through `rb_tainted_str_new()` and
+`rb_tainted_str_new_cstr()`.
+
+[[safe-level-4-issues]]
+== Safe Level 4 Issues ==
+
+The current implementation of safe level 4 is not perfect, and has the
+following issues:
+
+* There is no infinite loop or stack overflow detection, so a Denial Of
+  Service (DoS) attack is possible.
+* It is possible through extension library code that safe level checks
+  are not executed, allowing for external resources to be accessed.

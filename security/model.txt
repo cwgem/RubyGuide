@@ -1,4 +1,7 @@
 = Ruby Security Model =
+:Author: Shugo Maeda (Translator Chris White)
+:Date: September 4th 2011
+:Source: http://blade.nagaokaut.ac.jp/cgi-bin/vframe.rb/ruby/ruby-dev/38821?38666-39070+split-mode-vertical
 
 The Ruby security model was established with the following two differing goals in mind:
 

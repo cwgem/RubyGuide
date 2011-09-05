@@ -1,0 +1,196 @@
+= Rare Are GC Talks =
+:Author: nari (Translator Chris White)
+:Date: September 4th 2011
+:Source: http://jp.rubyist.net/magazine/?0025-RareAreGCTalk
+
+[NOTE]
+This document is a translation of a Japanese article by nari regarding garbage collection (GC), published in http://http://jp.rubyist.net/magazine/?0025-RareAreGCTalk[Rubyist Magazine].
+
+[[introduction]]
+== Introduction ==
+
+This article is meant to be an easy to understand explanation of GC algorithms to those who think to themselves "I get that garbage collection is useful, but I don't really understand how it all works". An explanation of how the CRuby GC works will follow. Finally we'll look a little at recent studies on Ruby GC alternatives. Oh, just to set the record straight, the GC described in this article and the Game Cube system has no relationship :-)
+
+[[the-gc-talk]]
+== When It Comes To Talking About Garbage Collection ==
+
+At the December 2008 Kyushu Ruby 01 Conference, I asked the audience "How many of you here have some interest in garbage collection?" Out of 200 people, only 3 raised their hands (even so I still proceeded to talk to no end about the subject). It seems as though the majority opinion about garbage collection is "As long as everything works okay behind the scenes I'm all okay." However garbage collection is one of the taken for granted features that is built into a good number of language processors. It would not hurt as a programmer to properly understand the structure and internal implementation of garbage collection. I would be greatly pleased if you read this article with a "All right, I'll take a little break and hear out your talk about garbage collection" type of mindset.
+
+[[what-is-gc]]
+== What Is GC ==
+
+GC is an abbreviation for "Garbage Collection". To execute GC means detecting unused regions in memory and freeing the memory held by these regions. It goes without saying that many programmers consider this a great blessing, so I think I'll leave the basic definition at that.
+
+[[gc-enabled-language-processors]]
+== GC Enabled Language Processors ==
+
+Many language processors these days have garbage collection already built-in. A few examples include:
+
+* Ruby
+* Perl
+* Java
+* Haskell
+* C#
+* Gauche
+
+One could say that garbage collection is a feature that modern language processors can't be without.
+
+[[gc-algo]]
+== GC Algorithms ==
+
+Now then how does garbage collection decide what is considered garbage for collection? Lets take a look at some of the garbage collection algorithms.
+
+[[three-major-algo]]
+=== The 3 Major Algorithms ===
+
+Garbage collection was first implemented at around the year 1960. Since then much work has gone into the field, and gave birth to the riser of newer algorithms. A good majority of these algorithms can be traced back to three standard algorithms. These are:
+
+* Mark & Sweep
+* Copying
+* Reference Count
+
+As they are considered the core foundation, their understand will help bring the developer closer to understand garbage collection.
+
+[[before-we-begin]]
+=== Before We Begin ===
+
+It's generally assumed when talking about garbage collection algorithms that the users has existing knowledge of machine stacks and registers. However this knowledge won't be necessary to describe the true nature of the matter. For this purpose I'll discuss just the essentials to make it easier for the reader to understand.
+
+[[book-arrangement-and-gc]]
+=== Book Arrangement And Garbage Collection ===
+
+[NOTE]
+It is tradition in Japan to do large scale cleaning at the end of the year. This is done to start the new year off with a clean slate. http://gojapan.about.com/cs/japaneseholidays/a/newyeareve.htm[Source]
+
+The year has already started, but I'm sure many people have cleaned their homes and offices at the end of the year. I myself was also tasked with end of the year cleaning at my company. At the office there is a bookshelf that is tightly packed with many technical publications. Some are old and will never be read again, others are quality works like the Ruby Hacking Guide (RHG). Here I decided to judge between necessary and unnecessary publications, and throw out the unnecessary ones. However the problem is not so simple as it sounds.
+
+The reason being is that this bookshelf is shared by everyone in the company, and it would be misguided to judge what is important based on my personal opinion. A work that I think no one will read might be useful to another coworker. This puts the main task at hand to find out which books are unwanted by everyone in the company. So how will I go about this task? The image below is meant to be a simple representation of the bookshelf.
+
+image:images/bookshelf_ms_01.jpg[illustration of the bookshelf]
+
+[[mark-and-sweep]]
+=== Mark & Sweep ===
+
+While a bit of an experimental idea, how about the following method. I'll take each an every book from the bookshelf, and ask everyone in the office "Do you think you'll use this book next year?" The more specific method would work as follows:
+
+. Start by taking a single book from the top left of the shelf
+. Walk around the office and ask "Do you think you'll use this book next year?"
+. If someone answers "Yes, I will!", then I'll apply a red mark on the spine and return it to the shelf
+. If everyone answers "No, don't need it at all", then I'll return the book to the shelf as is
+. Repeat this process, working down to the lower right corner of the bookshelf
+
+After all is said and done, the bookshelf turns out to look like the following:
+
+image:images/bookshelf_ms_02.jpg[illustration of the marked bookshelf]
+
+Using this method, valuable publications could be determined by the presence of a red mark, and unnecessary works by the lack of one. This process is known as the "Mark Phase". 
+
+The next step is to throw out the unnecessary books. The process works something like:
+
+. Once again, take each book from the bookshelf, starting from the upper left
+. If the book has a red mark on the spine, take the mark off and return it to the bookshelf
+. However, if nothing is on the spine, throw the book into the trash
+. Repeat this process, working down to the lower right corner of the bookshelf
+
+Once all is said and done, the bookshelf looks like the following:
+
+image:images/bookshelf_ms_03.jpg[illustration of the sorted bookshelf]
+
+Using this method, valuable books are returned to the bookshelf, and unnecessary books are disposed of. Now only the valuable books are left. This process is known as the "Sweep Phase". The entire process is therefore known as "Mark & Sweep".
+
+[[mark-and-sweep-cons]]
+==== Cons ====
+
+The bookshelf is now sorted, and all is fine and dandy. However there unfortunately remains one problem. Between some of the books there is a space of variable width. So if a book is slightly larger than any of the space, it won't fit into the bookshelf.
+
+image:images/bookshelf_ms_04.jpg[the fragmentation problem]
+
+This problem is known as "Fragmentation". If a new book needs to be put into the bookshelf, it may lead to issues. This requires thinking up a new method for sorting. As a side note CRuby utilizes this Mark & Sweep algorithm, and is subject to the same fragmentation problem.
+
+[[copying]]
+=== Copying ===
+
+With just one bookshelf there is the problem of fragmentation. So instead two bookshelves will be used for arranging the books.
+
+image:images/bookshelf_cp_01.jpg[full bookshelf and empty bookshelf]
+
+Specifically the following process will be used for arranging:
+
+. Start by taking a single book from the top left of the shelf
+. Walk around the office and ask "Do you think you'll use this book next year?"
+. If someone answers "Yes, I will!", place the book in the empty bookshelf
+. If everyone answers "No, don't need it at all", return the book to the original bookshelf
+. Repeat this process, working down to the lower right corner of the bookshelf
+
+Once all is said and done the result looks something like the following:
+
+image:images/bookshelf_cp_02.jpg[arranged bookshelves]
+
+Using this method, valuable books end up in the bookshelf on the right, and unnecessary books end up in the original bookshelf. With the Mark & Sweep method unnecessary books were indicated through the lack of a mark. With this method, they are instead designated by the resulting location that they are put in. So now to go about the removal of the unnecessary books. Well that's quite simple:
+
+. Throw out all of the books in the bookshelf on the left
+
+This gives the following:
+
+image:images/bookshelf_cp_03.jpg[copying disposed books]
+
+Without thinking about anything all of the books on the left bookshelf can be disposed of. This is method is known as the "Copying" algorithm.  Another thing to note is that the next time books are to be arranged, valuable books will be transferred to the bookshelf on the left instead.
+
+==== Pros ====
+
+Copying provides faster sorting than Mark & Sweep. The Mark & Sweep method also requires an additional pass over all the books in order to dispose of the unnecessary books properly, whereas Copying doesn't require this. Also the issue with fragmentation doesn't exist, and it's easier to fit in new books.
+
+==== Cons ====
+
+It's faster and doesn't have fragmentation issues, so it's perfect! So let's get started right away. Unfortunately there's a problem. There are no empty bookshelves laying around. All of the bookshelves are packed with books \*facepalm* Comparing to Mark & Sweep, twice the storage space is required. This certainly does no good. A new bookshelf could be purchased, but that seems a bit overkill. Next up a fundamentally different method will be tested.
+
+=== Reference Count ===
+
+Is the reader the type that works on summer homework everyday, or the type that waits until the last two days to complete it? I happen to be in the later group. Because of this, I have recollections of my parents scolding me saying "It's because you're out playing everyday that things turn out like this!" With this in mind, how about throwing out the notion that the bookshelf needs to be arranged at the end of the year? If the bookshelf is arranged regularly, there's no need to fumble around at the end of the year doing it. 
+
+With this in mind the "Don't Toss Me Card" method is created. 
+
+image:images/bookshelf_rf_01.jpg[The Don't Toss Me Card]
+
+The "Don't Toss Me Card" is as the name states a card in which anyone who considers the book valuable will write their name in the card. This card is created for each and every book, then placed inside of it. So how does the usage of the "Don't Toss Me Card" work? Take for example a fictional character "Mr. A" who has purchased a new book. 
+
+. Mr. A purchases the book
+. He then creates the "Don't Toss Me Card"
+. Mr. A then writes his name in the "Don't Toss Me Card" and places it inside the book
+. Mr. B realizes the presences of the new book
+. Mr. B thinks to himself "I think I might want to read this book" and writes his name in the "Don't Toss Me Card"
+
+At this point, the "Don't Toss Me Card" looks something like this:
+
+image:images/bookshelf_rf_02.jpg[The Filled Out Don't Toss Me Card]
+
+In this manner, the book that Mr. A purchases begins to fill up with more names. So, how does this book become unnecessary? It works something like this:
+
+. Mr. A finishes reading the book and thinks to himself "I'm won't read this again so I don't need it anymore"
+. Mr. A crosses his name off the "Don't Toss Me Card"
+. Mr. B thinks to himself "The technology in this book has gotten pretty old so I don't feel like reading it anymore"
+. Mr. B crosses his name off the "Don't Toss Me Card"
+. Since all the names have been crossed off the "Don't Toss Me Card", the book is considered unnecessary
+. The last person to cross their name off, Mr. B, throws the book away
+
+In this manner unnecessary books are safely disposed of.
+
+image:images/bookshelf_rf_03.jpg[A Don't Toss Me Card for an unnecessary book]
+
+This method is referred to as the "Reference Count Algorithm". In the example the interests of the employees are referenced and counted. However in a more practical sense references of mutual objects are instead counted.
+
+==== Pros ====
+
+The benefit of this method is the burden is now decentralized. Cleaning the bookshelf at the end of the year is very difficult, but handling it on a normal basis is much more manageable. 
+
+==== Cons ====
+
+Annoyance is the main problem with this algorithm. With the Reference Count algorithm, one must ensure that they fill out their name and erase it later. However someone is likely to forget to do this. If someone doesn't fill out their name, a valuable book could get thrown out, and if someone forgets to cross out their name, a useless book is left sticking around. This is very annoying.
+
+=== So How Fares The Arranging? ===
+
+The book arrangement is very annoying isn't it? Fragmentation can occur, another bookshelf could become necessary... However this is quite a distorted view of things to show how garbage collection works. A more practical solution would simply be to throw out books that no longer look necessary. Also there's the method of not sorting the books at all :-) In my case I simply threw out books that didn't look necessary to me. There's the chance that someone wanted to read that book, but oh well that's life! 
+
+=== A Quick Summary ===
+
+This section used an easy to understand explanation of garbage collection using the arrangement of books as an example. It was a bit distorted however. I wonder if there is still the reader who thinks to themselves "I want to try and implement this!", or feels that this explanation is not detailed enough. 

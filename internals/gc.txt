@@ -4,7 +4,7 @@
 :Source: http://jp.rubyist.net/magazine/?0025-RareAreGCTalk
 
 [NOTE]
-This document is a translation of a Japanese article by nari regarding garbage collection (GC), published in http://http://jp.rubyist.net/magazine/?0025-RareAreGCTalk[Rubyist Magazine].
+This document is a translation of a Japanese article by nari regarding garbage collection (GC), published in http://jp.rubyist.net/magazine/?0025-RareAreGCTalk[Rubyist Magazine].
 
 [[introduction]]
 == Introduction ==
@@ -193,4 +193,68 @@ The book arrangement is very annoying isn't it? Fragmentation can occur, another
 
 === A Quick Summary ===
 
-This section used an easy to understand explanation of garbage collection using the arrangement of books as an example. It was a bit distorted however. I wonder if there is still the reader who thinks to themselves "I want to try and implement this!", or feels that this explanation is not detailed enough. 
+This section used an easy to understand explanation of garbage collection using the arrangement of books as an example. It was a bit distorted however. I wonder if there is still the reader who thinks to themselves "I want to try and implement this!", or feels that this explanation is not detailed enough.
+
+== The Ruby GC Structure ==
+
+Now that the reader has become familiar with the basics of garbage collection algorithms, I'll explain the structure of the Ruby GC. First off it is, as mentioned previously, based on the Mark & Sweep algorithm. Since the basics of algorithm have been touched upon in the previous section, we'll look at how the Ruby GC implements it.
+
+WARNING: From here on out a good amount of knowledge in C and Ruby is required
+
+=== Mark & Sweep ===
+
+Below is a sample program that has been prepared for explanation purposes:
+
+[source,ruby]
+---------------------------------
+#Child class definition
+class Child; end
+
+#Array creation
+arry1 = []
+#Insertion of Child class instance
+arry1 << Child.new
+
+#Array creation
+arry2 = []
+#Insertion of Child class instance
+arry2 << Child.new
+arry2 << Child.new
+#Destroy the reference
+arry2 = nil
+
+#Start the GC process!
+GC.start
+---------------------------------
+
+We'll now take a look at how CRuby would operate if we were to run this program. First is the class definition and the creation of the array.
+
+image:images/crubygc_ms_01.jpg[Array creation]
+
+First is the heap area referenced in the diagram. This heap area is not referring to the C heap area, but instead the heap area that is used by Ruby. The Ruby heap area is maintained as a collection of RVALUE types. 
+
+NOTE: For the curious, RVALUE is declared in gc.c in the Ruby source. 
+
+The RArray that was just created is defined in this heap area. This is the structure of the array instance created by Ruby. When an array is created in Ruby, the CRuby side stores the result in a structure called RArray. Afterwards, a pointer to the RArray is inserted in the root area. This pointer has a similar role to the `arry1` variable on the Ruby side. The details of root will be explained later on, so for now think of this like the management of local variables.
+
+image:images/crubygc_ms_02.jpg[Object insertion]
+
+image:images/crubygc_ms_03.jpg[Second array creation]
+
+image:images/crubygc_ms_04.jpg[Second array object insertion]
+
+image:images/crubygc_ms_05.jpg[Second array second object insertion]
+
+image:images/crubygc_ms_06.jpg[Second array dereference]
+
+image:images/crubygc_ms_07.jpg[GC mark phase 1]
+
+image:images/crubygc_ms_08.jpg[GC mark phase 2]
+
+image:images/crubygc_ms_09.jpg[GC sweep phase 3]
+
+image:images/crubygc_ms_010.jpg[GC sweep phase 2]
+
+image:images/crubygc_ms_011.jpg[GC object removal]
+
+image:images/crubygc_ms_012.jpg[GC completion]

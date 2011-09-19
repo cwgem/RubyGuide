@@ -324,3 +324,13 @@ is_pointer_to_heap(integer) #=> true
 ---------------------------------
 
 If there is an inactive object at address `0x0500`, it will be mistaken for an active object. With this method anything that looks like an object pointer is considered to be active. This is unfortunately something that can't be helped... This method of attempting to safely remove doubtful objects is a very conservative outlook, and thus this process is known as "Conservative GC". CRuby uses this conservative GC in its implementation.
+
+==== Issues ====
+
+Isn't it strange though? Is it really okay that garbage objects are considered active? It seems as though a fatal bug could occur. The reason why such issues will not occur is because it's all about objects that are no longer necessary to the user. Since garbage objects are hidden from the user, they are not accessible. Therefore even if such objects are active they still won't cause the user issues directly. Of course, if such objects increase to much then memory will be exhausted. This is definitely an issue.
+
+==== Weaknesses ====
+
+The major weakness of Conservative GC is that it is limited in the algorithms that it can use. For example, the previously mentioned Copying GC cannot be utilized. This is because in order to transfer the entire object, the pointer to the object must also be rewritten. However, Conservative GC is unable to determine the difference between pointer and integer values. If an integer value was overwritten the result would be disastrous. It is likely that the result of `1+1` would change occasionally. 
+
+

@@ -239,22 +239,44 @@ The RArray that was just created is defined in this heap area. This is the struc
 
 image:images/crubygc_ms_02.jpg[Object insertion]
 
+A Child class instance has been created. This object is stored in the heap area internally in a structure called RObject. Additionally, a pointer to the object is inserted into the RArray.
+
 image:images/crubygc_ms_03.jpg[Second array creation]
+
+As with before, an RArray structure is added to the heap area, and a pointer referencing it is inserted into the root.
 
 image:images/crubygc_ms_04.jpg[Second array object insertion]
 
 image:images/crubygc_ms_05.jpg[Second array second object insertion]
 
+The same explanation applies here as before.
+
 image:images/crubygc_ms_06.jpg[Second array dereference]
+
+The local variable arry2 is set to nil. This causes the removal of the pointer to the RArray from the root. As you can tell from the image, there is no longer a reference pointing to the RArray object on the heap. This means the object is no longer necessary and should be collected as garbage. The same status applies for the RObjects contained within the RArray.
 
 image:images/crubygc_ms_07.jpg[GC mark phase 1]
 
+Now for the long awaited garbage collection phase. In what way will the unnecessary objects be freed?
+
 image:images/crubygc_ms_08.jpg[GC mark phase 2]
+
+This is the beginning of the Mark processing phase. During this phase active objects are marked recursively starting from root. More specifically it sets every structure's mark bit to 1. If the object has already been marked then it will be skipped. The important thing to note is that objects which are not referenced are not marked. This is similar to the story about the bookshelf. In this manner active objects can be discerned from unnecessary objects.
 
 image:images/crubygc_ms_09.jpg[GC sweep phase 3]
 
+Next is the sweep phase. In the sweep phase, objects are checked to see if they have been marked or not.
+
 image:images/crubygc_ms_010.jpg[GC sweep phase 2]
+
+If the object has the bit mark set, its bit mark is set back to 0. This is to prevent bugs from occurring during the next GC pass.
 
 image:images/crubygc_ms_011.jpg[GC object removal]
 
+If the mark bit is not set, then the objects are removed. This completes the GC process.
+
 image:images/crubygc_ms_012.jpg[GC completion]
+
+Now unnecessary objects are removed and only active objects remain.
+
+=== Conservative GC ===

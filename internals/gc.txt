@@ -347,7 +347,7 @@ For the GC implementor things are nice and simple, but from the user perspective
 
 == Recent Trends ==
 
-Lately there has been much activity around improving the CRuby GC implementation. In October of 2008, 3 possible RubyGC implementations were proposed at the Matsue (the town where Ruby was developed) http://www.math.nagoya-u.ac.jp/~garrigue/pro71/[71st Data Processing Academic Conference Programming Research Paper Meeting (Japanese)]. This event was explained by Mr. Sasada as "It's this kind, no that kind of event". I see :-). I will now provide a basic introduction to the three proposed GC implementations. The details are left out, and those seeking more information can refer to the links below. 
+Lately there has been much activity around improving the CRuby GC implementation. In October of 2008, 3 possible RubyGC implementations were proposed at the Matsue (the town where Ruby was developed) http://www.math.nagoya-u.ac.jp/~garrigue/pro71/[71st Data Processing Academic Conference Programming Research Paper Meeting (Japanese)]. This event was explained by Koichi Sasada as "It's this kind, no that kind of event". I see :-). I will now provide a basic introduction to the three proposed GC implementations. The details are left out, and those seeking more information can refer to the links below. 
 
 [WARNING]
 The links below are in Japanese, so please be warned!
@@ -361,5 +361,13 @@ BitmapMarking GC is an improved GC that was proposed by Yukihiro Matsumoto (Ruby
 * http://www.ustream.tv/recorded/838010[4th NaCL Study Group \~ BitmapMarkingGC ~] - A video of myself explaining the algorithm at the NaCL Study Group
 * http://www.narihiro.info/resource/presen/bitmap_gc.pdf[Utilization Of An Effective Bitmap Marking Implementation For Ruby] - A paper on the algorithm written by Matsumoto and myself
 * http://github.com/authorNari/ruby/tree/master/patch/gc_bitmap_by_align_to_v_1_9_0_4.patch[Patch] - A Practical Implementation
+
+=== Snapshot GC ===
+
+The product of University of Tokyo's Hikari Aikawa research titled "Implementation of Snapshot GC on the Ruby Interpreter". This is an attempt to implement incremental garbage collection in the Ruby GC. I learned of a very beneficial feature, "You need to stick a write barrier here or it's no good!" in the research and implementation. At the moment it can only run in miniruby, but I look forward to how it progresses. 
+
+==== More Information ====
+
+* http://www.yuasa.kuis.kyoto-u.ac.jp/~aikawa/files/presentation.ppt[Support Of Write Barrier Insertion in The CRuby Interpreter] - Mr. Aikawa was kind enough to distribute research materials which should provide a starting point for those interested.
 
 

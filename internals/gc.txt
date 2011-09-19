@@ -384,6 +384,13 @@ The product of the University of Electro Communication Tomoharu Ugawa's research
 * http://i.loveruby.net/ja/rhg/book/gc.html[RHG (Ruby Hacking Guide) Chapter 5: Garbage Collection] - Those wanting to learn more about the RubyGC can read more on it in the Ruby Hacking Guide (RHG) by Minero Aoki
 * http://matsu-www.is.titech.ac.jp/~endo/gc/gc.pdf[Garbage Collection Overview] - An easy to understand explanation of garbage collection in general
 * http://wiki.livedoor.jp/author_nari/d/GC[Garbage Collection In Detail] - Those wishing to know more about Garbage Collection algorithms can take a look at the wiki that I'm working on
-* http://www.amazon.co.jp/Garbage-Collection-Algorithms-Automatic-Management/dp/0471941484/[Garbage Collection: Algorithms for Automatic Dynamic Memory Management] - For those serious about learning garbage collection I recommend this book. It is a very comprehensive book on the matter. 
+* http://www.amazon.co.jp/Garbage-Collection-Algorithms-Automatic-Management/dp/0471941484/[Garbage Collection: Algorithms for Automatic Dynamic Memory Management] - For those serious about learning garbage collection I recommend this book. It is a very comprehensive book on the matter
+
+== Conclusion ==
+
+Thank you to those of you that came this far. I hope that reading this article has given you even a little interest in garbage collection. Unless the GC in your head has judged this article to be garbage :-)
+
+== About The Author ==
+
 
 

@@ -282,3 +282,13 @@ Now unnecessary objects are removed and only active objects remain.
 === Conservative GC ===
 
 Now what about the talk about root that was put off from before? What exactly is root? Put simply it is the area in which pointers to objects are stored. More specifically it is the area where the machine stack, register, global variables, and Ruby internal global variable management table is stored. If an object is pointed to from a pointer in root, that object is considered active. Following the bookshelf example, the root is the bookshelf shared by everyone, and pointers in the root are considered to be the feeling that the book is important.
+
+==== Object Lifetime Definition ====
+
+The definition of object lifetime is as follows:
+
+* Objects pointed to by the current user program's memory area (register, stack, global variables, etc. in other words root) are considered active (necessary objects)
+* Objects pointed to by other active objects are themselves active
+* All other objects are considered to be garbage and collected accordingly
+
+

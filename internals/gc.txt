@@ -280,3 +280,5 @@ image:images/crubygc_ms_012.jpg[GC completion]
 Now unnecessary objects are removed and only active objects remain.
 
 === Conservative GC ===
+
+Now what about the talk about root that was put off from before? What exactly is root? Put simply it is the area in which pointers to objects are stored. More specifically it is the area where the machine stack, register, global variables, and Ruby internal global variable management table is stored. If an object is pointed to from a pointer in root, that object is considered active. Following the bookshelf example, the root is the bookshelf shared by everyone, and pointers in the root are considered to be the feeling that the book is important.

@@ -344,3 +344,14 @@ The main strength of Exact GC is that it is able to implement a large number of 
 ==== Weaknesses ====
 
 For the GC implementor things are nice and simple, but from the user perspective it becomes complicated. For example, in CRuby extension libraries can be easily implemented, but if an Exact GC was used this would become very difficult. It is possible that the user could scatter object pointers about the stack and registers. If this was a single reference, it would be picked up as an object and mistakingly collected. Letting the user freely deal with object pointers becomes problematic. This means the user side would inevitably become more restricted.
+
+== Recent Trends ==
+
+Lately there has been much activity around improving the CRuby GC implementation. In October of 2008, 3 possible RubyGC implementations were proposed at the Matsue (the town where Ruby was developed) http://www.math.nagoya-u.ac.jp/~garrigue/pro71/[71st Data Processing Academic Conference Programming Research Paper Meeting (Japanese)]. This event was explained by Mr. Sasada as "It's this kind, no that kind of event". I see :-). I will now provide a basic introduction to the three proposed GC implementations. The details are left out, and those seeking more information can refer to the links below. 
+
+[NOTE]
+The links below are in Japanese, so please be warned!
+
+=== BitmapMarking GC ===
+
+

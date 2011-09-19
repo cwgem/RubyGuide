@@ -291,4 +291,36 @@ The definition of object lifetime is as follows:
 * Objects pointed to by other active objects are themselves active
 * All other objects are considered to be garbage and collected accordingly
 
+==== Determining Pointers That Reference Objects ====
 
+In the machine stack and register there are numerous values stored that have no relation to pointers. For example, `int` values or `char` values. Basically many values are mixed together without any type of sorting. With this in mind, how are pointers to objects identified? In CRuby, this is determined by whether or not the value is stored in the heap area. As it is bit difficult to put into words, I've written some Ruby code to help explain. The heap area is assumed to be from `0x0000` to `0x1000`. 
+
+[source,ruby]
+---------------------------------
+def is_pointer_to_heap?(value)
+  heap_start = 0x0000
+  heap_end   = 0x1000
+  return true if heap_start <= value && value < heap_end
+  return false
+end
+
+stacks = [0x0000, 0x0500, 0x10000]
+is_pointer_to_heap?(stacks[0])     #=> true
+is_pointer_to_heap?(stacks[1])     #=> true
+is_pointer_to_heap?(stacks[2])     #=> false
+---------------------------------
+
+As per the code above, pointers to objects are determined through the following method:
+
+* If the value is inside the heap area, it is considered a pointer to an object
+* If the value is outside of the heap area, it is considered not to be a pointer to an object
+
+Through this method it is easy to determine what pointers are pointing to objects. However this method is not perfect. For example, it is unable to determine the difference between the pointer `0x0500` and the integer `0x0500`. 
+
+[source,ruby]
+---------------------------------
+integer = 0x0500
+is_pointer_to_heap(integer) #=> true
+---------------------------------
+
+If there is an inactive object at address `0x0500`, it will be mistaken for an active object. With this method anything that looks like an object pointer is considered to be active. This is unfortunately something that can't be helped... This method of attempting to safely remove doubtful objects is a very conservative outlook, and thus this process is known as "Conservative GC". CRuby uses this conservative GC in its implementation.

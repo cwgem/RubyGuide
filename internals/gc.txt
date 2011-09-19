@@ -337,8 +337,10 @@ The major weakness of Conservative GC is that it is limited in the algorithms th
 
 The opposite of Conservative GC is known as Exact GC. Exact GC does not check the machine stack or registers. The image is that it manages object pointers. Due to this implementation, it is able to free all unnecessary objects. For those who would like to see an implementation of Exact GC, I recommend looking at http://tinyscheme.sourceforge.net/[TinyScheme] and other Scheme implementations. It is very simple and easy to understand. http://rubini.us/[Rubinius] also implements an Exact GC, but it is complex so I can't recommend it to beginners.
 
-=== Strong Points ===
+==== Strong Points ====
 
 The main strength of Exact GC is that it is able to implement a large number of GC algorithms. Algorithms that move around objects like Copying GC are possible. There is no concern over accidentally overwriting a value that was an integer. Of course, it is also able to implement the Mark & Sweep algorithm. 
 
+==== Weaknesses ====
 
+For the GC implementor things are nice and simple, but from the user perspective it becomes complicated. For example, in CRuby extension libraries can be easily implemented, but if an Exact GC was used this would become very difficult. It is possible that the user could scatter object pointers about the stack and registers. If this was a single reference, it would be picked up as an object and mistakingly collected. Letting the user freely deal with object pointers becomes problematic. This means the user side would inevitably become more restricted.

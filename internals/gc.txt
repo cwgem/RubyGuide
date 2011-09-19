@@ -338,3 +338,7 @@ The major weakness of Conservative GC is that it is limited in the algorithms th
 The opposite of Conservative GC is known as Exact GC. Exact GC does not check the machine stack or registers. The image is that it manages object pointers. Due to this implementation, it is able to free all unnecessary objects. For those who would like to see an implementation of Exact GC, I recommend looking at http://tinyscheme.sourceforge.net/[TinyScheme] and other Scheme implementations. It is very simple and easy to understand. http://rubini.us/[Rubinius] also implements an Exact GC, but it is complex so I can't recommend it to beginners.
 
 === Strong Points ===
+
+The main strength of Exact GC is that it is able to implement a large number of GC algorithms. Algorithms that move around objects like Copying GC are possible. There is no concern over accidentally overwriting a value that was an integer. Of course, it is also able to implement the Mark & Sweep algorithm. 
+
+

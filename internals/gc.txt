@@ -49,7 +49,7 @@ This document is a translation of a Japanese article by nari regarding garbage c
 [[introduction]]
 == Introduction ==
 
-This article is meant to be an easy to understand explanation of GC algorithms to those who think to themselves "I get that garbage collection is useful, but I don't really understand how it all works". An explanation of how the CRuby GC works will follow. Finally we'll look a little at recent studies on Ruby GC alternatives. Oh, just to set the record straight, the GC described in this article and the Game Cube system has no relationship :-)
+This article is meant to be an easy to understand explanation of GC algorithms to those who think to themselves "I get that garbage collection is useful, but I don't really understand how it all works". An explanation of how the CRuby[[ftm01]]<<ftm01-end,~*1~>> GC works will follow. Finally we'll look a little at recent studies on Ruby GC alternatives. Oh, just to set the record straight, the GC described in this article and the Game Cube system has no relationship :-)
 
 [[the-gc-talk]]
 == When It Comes To Talking About Garbage Collection ==
@@ -145,7 +145,7 @@ The bookshelf is now sorted, and all is fine and dandy. However there unfortunat
 
 image:images/bookshelf_ms_04.jpg[the fragmentation problem]
 
-This problem is known as "Fragmentation". If a new book needs to be put into the bookshelf, it may lead to issues. This requires thinking up a new method for sorting. As a side note CRuby utilizes this Mark & Sweep algorithm, and is subject to the same fragmentation problem.
+This problem is known as "Fragmentation". If a new book needs to be put into the bookshelf, it may lead to issues. This requires thinking up a new method for sorting. As a side note CRuby utilizes this Mark & Sweep algorithm, and is subject to the same fragmentation problem[[ftm02]]<<ftm02-end,~*2~>>.
 
 [[copying]]
 === Copying ===
@@ -184,7 +184,7 @@ Copying provides faster sorting than Mark & Sweep. The Mark & Sweep method also 
 [[copying-cons]]
 ==== Cons ====
 
-It's faster and doesn't have fragmentation issues, so it's perfect! So let's get started right away. Unfortunately there's a problem. There are no empty bookshelves laying around. All of the bookshelves are packed with books \*facepalm* Comparing to Mark & Sweep, twice the storage space is required. This certainly does no good. A new bookshelf could be purchased, but that seems a bit overkill. Next up a fundamentally different method will be tested.
+It's faster and doesn't have fragmentation issues, so it's perfect! So let's get started right away. Unfortunately there's a problem. There are no empty bookshelves laying around. All of the bookshelves are packed with books \*facepalm* Comparing to Mark & Sweep, twice the storage space is required. This certainly does no good. A new bookshelf could be purchased[[ftm03]]<<ftm03-end,~*3~>>, but that seems a bit overkill. Next up a fundamentally different method will be tested.
 
 [[ref-count]]
 === Reference Count ===
@@ -405,7 +405,7 @@ For the GC implementor things are nice and simple, but from the user perspective
 [[recent-trends]]
 == Recent Trends ==
 
-Lately there has been much activity around improving the CRuby GC implementation. In October of 2008, 3 possible RubyGC implementations were proposed at the Matsue (the town where Ruby was developed) http://www.math.nagoya-u.ac.jp/~garrigue/pro71/[71st Data Processing Academic Conference Programming Research Paper Meeting (Japanese)]. This event was explained by Koichi Sasada as "It's this kind, no that kind of event". I see :-). I will now provide a basic introduction to the three proposed GC implementations. The details are left out, and those seeking more information can refer to the links below. 
+Lately there has been much activity around improving the CRuby GC implementation. In October of 2008, 3 possible RubyGC implementations were proposed at the Matsue (the town where Ruby was developed) http://www.math.nagoya-u.ac.jp/~garrigue/pro71/[71st Data Processing Academic Conference Programming Research Paper Meeting (Japanese)]. This event was explained by Koichi Sasada as "It's this kind, no that kind of event"[[ftm04]]<<ftm04-end,~*4~>> [[ftm05]]<<ftm05-end,~*5>>. I see :-). I will now provide a basic introduction to the three proposed GC implementations. The details are left out, and those seeking more information can refer to the links below. 
 
 [WARNING]
 The links below are in Japanese, so please be warned!
@@ -425,7 +425,7 @@ BitmapMarking GC is an improved GC that was proposed by Yukihiro Matsumoto (Ruby
 [[snapshot-gc]]
 === Snapshot GC ===
 
-The product of the University of Tokyo Hikari Aikawa's research titled "Implementation of Snapshot GC on the Ruby Interpreter". This is an attempt to implement incremental garbage collection in the Ruby GC. I learned of a very beneficial feature, "You need to stick a write barrier here or it's no good!" in the research and implementation. At the moment it can only run in miniruby, but I look forward to how it progresses. 
+The product of the University of Tokyo Hikari Aikawa's research titled "Implementation of Snapshot GC on the Ruby Interpreter". This is an attempt to implement incremental garbage collection in the Ruby GC. I learned of a very beneficial feature, "You need to stick a write barrier here or it's no good!" in the research and implementation. At the moment it can only run in miniruby[[ftm06]]<<ftm06-end,~*6~>>, but I look forward to how it progresses. 
 
 [[snapshot-info]]
 ==== More Information ====
@@ -469,3 +469,10 @@ Member of the http://www.netlab.jp/[Network Applied Communication Laboratory]. L
 Hello I'm Chris White, a passionate Rubyist. I've been studying Japanese for many years, and enjoy doing technical translations. As someone who loves learning more about the inner workings of Ruby this was an enjoyable document to work on! Thank you to nari-san for such an interesting article!
 
 As a final note I've removed the author's contact information in the "About The Author" section to avoid surprise English emails. If you would like to send your thoughts, please contact me instead and I will pass them on! You can reach me at cwprogram at live dot com.
+
+[[ftm01-end]]<<ftm01,*1>> The C-based Ruby implementation by Yukihiro Matsumoto +
+[[ftm02-end]]<<ftm02,*2>> There are many effective countermeasures against this which may be discussed in more detail in the future +
+[[ftm03-end]]<<ftm03,*3>> No, putting them on the floor isn't the answer either :-) +
+[[ftm04-end]]<<ftm04,*4>> http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/45519[ruby-list:45519] +
+[[ftm05-end]]<<ftm05,*5>> This is where the idea for the title came from (Editor's note: this is referring to the original Japanese title) +
+[[ftm06-end]]<<ftm06,*6>> This is a minimum configuration Ruby implementation without any extension libraries generated at build time

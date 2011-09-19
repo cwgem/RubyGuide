@@ -420,7 +420,7 @@ BitmapMarking GC is an improved GC that was proposed by Yukihiro Matsumoto (Ruby
 
 * http://www.ustream.tv/recorded/838010[4th NaCL Study Group \~ BitmapMarkingGC ~] - A video of myself explaining the algorithm at the NaCL Study Group
 * http://www.narihiro.info/resource/presen/bitmap_gc.pdf[Utilization Of An Effective Bitmap Marking Implementation For Ruby] - A paper on the algorithm written by Matsumoto and myself
-* http://github.com/authorNari/ruby/tree/master/patch/gc_bitmap_by_align_to_v_1_9_0_4.patch[Patch] - A Practical Implementation
+* https://github.com/authorNari/patch_bag/blob/master/ruby/gc_bitmap_by_align_to_v_1_9_0_4.patch[Patch] - A Practical Implementation
 
 [[snapshot-gc]]
 === Snapshot GC ===

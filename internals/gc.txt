@@ -392,5 +392,11 @@ Thank you to those of you that came this far. I hope that reading this article h
 
 == About The Author ==
 
+http://d.hatena.ne.jp/authorNari/[nari]
 
+Member of the http://www.netlab.jp/[Network Applied Communication Laboratory]. Likes GC. Not to found of real life garbage collection though... 
+== About The Translator ==
 
+Hello I'm Chris White and a passionate Rubyist. I've been studying Japanese for many years, and enjoy doing technical translations. As someone who loves learning more about the inner workings of Ruby this was an enjoyable document to work on! Thank you to nari-san for such an interesting article!
+
+As a final note I've removed the author's contact information in the "About The Author" section to avoid surprise English emails. If you would like to send your thoughts, please contact me instead and I will pass them on! You can reach me at cwprogram at live dot com.

@@ -364,10 +364,19 @@ BitmapMarking GC is an improved GC that was proposed by Yukihiro Matsumoto (Ruby
 
 === Snapshot GC ===
 
-The product of University of Tokyo's Hikari Aikawa research titled "Implementation of Snapshot GC on the Ruby Interpreter". This is an attempt to implement incremental garbage collection in the Ruby GC. I learned of a very beneficial feature, "You need to stick a write barrier here or it's no good!" in the research and implementation. At the moment it can only run in miniruby, but I look forward to how it progresses. 
+The product of the University of Tokyo Hikari Aikawa's research titled "Implementation of Snapshot GC on the Ruby Interpreter". This is an attempt to implement incremental garbage collection in the Ruby GC. I learned of a very beneficial feature, "You need to stick a write barrier here or it's no good!" in the research and implementation. At the moment it can only run in miniruby, but I look forward to how it progresses. 
 
 ==== More Information ====
 
 * http://www.yuasa.kuis.kyoto-u.ac.jp/~aikawa/files/presentation.ppt[Support Of Write Barrier Insertion in The CRuby Interpreter] - Mr. Aikawa was kind enough to distribute research materials which should provide a starting point for those interested.
+
+=== Mostly Copying GC ===
+
+The product of the University of Electro Communication Tomoharu Ugawa's research titled "Mostly Copying GC Implementation For The RubyVM". This algorithm is an attempt to introduce Copying GC to a Conservative GC. If this algorithm is implemented it would help to improve the fragmentation issue. Mr. Matsumoto stated "If it's all right I'd like to add it sometime tomorrow." Wow. Currently there is only a patch against YARV before it was merged into 1.9, but I look forward to how it turns out.
+
+==== More Information ====
+
+* http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/19909[ruby-core:19909] - Ruby Core thread 19909 contains the published materials regarding Mostly Copying GC
+* http://wiki.livedoor.jp/author_nari/d/GC/extend/MostlyCopyingGC(Bartlett%201989)[MostlyCopyingGC(Bartlett 1989)] - Those interested in the details of the algorithm can read more about it here
 
 

@@ -333,4 +333,8 @@ Isn't it strange though? Is it really okay that garbage objects are considered a
 
 The major weakness of Conservative GC is that it is limited in the algorithms that it can use. For example, the previously mentioned Copying GC cannot be utilized. This is because in order to transfer the entire object, the pointer to the object must also be rewritten. However, Conservative GC is unable to determine the difference between pointer and integer values. If an integer value was overwritten the result would be disastrous. It is likely that the result of `1+1` would change occasionally. 
 
+=== Exact GC ===
 
+The opposite of Conservative GC is known as Exact GC. Exact GC does not check the machine stack or registers. The image is that it manages object pointers. Due to this implementation, it is able to free all unnecessary objects. For those who would like to see an implementation of Exact GC, I recommend looking at http://tinyscheme.sourceforge.net/[TinyScheme] and other Scheme implementations. It is very simple and easy to understand. http://rubini.us/[Rubinius] also implements an Exact GC, but it is complex so I can't recommend it to beginners.
+
+=== Strong Points ===

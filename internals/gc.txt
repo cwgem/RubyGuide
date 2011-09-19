@@ -6,6 +6,46 @@
 [NOTE]
 This document is a translation of a Japanese article by nari regarding garbage collection (GC), published in http://jp.rubyist.net/magazine/?0025-RareAreGCTalk[Rubyist Magazine].
 
+* <<introduction,Introduction>>
+* <<the-gc-talk,When It Comes To Talking About Garbage Collection>>
+* <<what-is-gc,What Is GC?>>
+* <<gc-enabled-language-processors,GC Enabled Language Processors>>
+* <<gc-algo,GC Algorithms>>
+** <<three-major-algo,The Three Major Algorithms>>
+** <<before-we-begin,Before We Begin>>
+** <<book-arrangement-and-gc,Book Arrangement And Garbage Collection>>
+** <<mark-and-sweep,Mark & Sweep>>
+*** <<mark-and-sweep-cons,Cons>>
+** <<copying,Copying>>
+*** <<copying-pros,Pros>>
+*** <<copying-cons,Cons>>
+** <<ref-count,Reference Count>>
+*** <<ref-count-pros,Pros>>
+*** <<ref-count-cons,Cons>>
+** <<how-fares,So How Fares The Arranging?>>
+** <<quick-summary,A Quick Summary>>
+* <<ruby-gc-structure,The Ruby GC Structure>>
+** <<mark-sweep-ruby-gc, Mark & Sweep>>
+** <<conservative-gc,Conservative GC>>
+*** <<object-lifetime,Object Lifetime Definition>>
+*** <<pointer-determine,Determining Pointers That Reference Objects>>
+*** <<conservative-issues,Issues>>
+*** <<conservative-weakness,Weaknesses>>
+** <<exact-gc,Exact GC>>
+*** <<exact-strengths,Strong Points>>
+*** <<exact-weakness,Weaknesses>>
+* <<recent-trends,Recent Trends>>
+** <<bitmap-marking,Bitmap Marking GC>>
+*** <<bitmap-info,More Information>>
+** <<snapshot-gc,Snapshot GC>>
+*** <<snapshot-info,More Information>>
+** <<mostly-copying,Mostly Copying GC>>
+*** <<mostly-copying-info,More Information>>
+* <<related-documents,Related Documents>>
+* <<conclusion,Conclusion>>
+* <<about-the-author,About The Author>>
+* <<about-the-translator,About The Translator>>
+
 [[introduction]]
 == Introduction ==
 
@@ -17,7 +57,7 @@ This article is meant to be an easy to understand explanation of GC algorithms t
 At the December 2008 Kyushu Ruby 01 Conference, I asked the audience "How many of you here have some interest in garbage collection?" Out of 200 people, only 3 raised their hands (even so I still proceeded to talk to no end about the subject). It seems as though the majority opinion about garbage collection is "As long as everything works okay behind the scenes I'm all okay." However garbage collection is one of the taken for granted features that is built into a good number of language processors. It would not hurt as a programmer to properly understand the structure and internal implementation of garbage collection. I would be greatly pleased if you read this article with a "All right, I'll take a little break and hear out your talk about garbage collection" type of mindset.
 
 [[what-is-gc]]
-== What Is GC ==
+== What Is GC? ==
 
 GC is an abbreviation for "Garbage Collection". To execute GC means detecting unused regions in memory and freeing the memory held by these regions. It goes without saying that many programmers consider this a great blessing, so I think I'll leave the basic definition at that.
 
@@ -41,7 +81,7 @@ One could say that garbage collection is a feature that modern language processo
 Now then how does garbage collection decide what is considered garbage for collection? Lets take a look at some of the garbage collection algorithms.
 
 [[three-major-algo]]
-=== The 3 Major Algorithms ===
+=== The Three Major Algorithms ===
 
 Garbage collection was first implemented at around the year 1960. Since then much work has gone into the field, and gave birth to the riser of newer algorithms. A good majority of these algorithms can be traced back to three standard algorithms. These are:
 
@@ -136,14 +176,17 @@ image:images/bookshelf_cp_03.jpg[copying disposed books]
 
 Without thinking about anything all of the books on the left bookshelf can be disposed of. This is method is known as the "Copying" algorithm.  Another thing to note is that the next time books are to be arranged, valuable books will be transferred to the bookshelf on the left instead.
 
+[[copying-pros]]
 ==== Pros ====
 
 Copying provides faster sorting than Mark & Sweep. The Mark & Sweep method also requires an additional pass over all the books in order to dispose of the unnecessary books properly, whereas Copying doesn't require this. Also the issue with fragmentation doesn't exist, and it's easier to fit in new books.
 
+[[copying-cons]]
 ==== Cons ====
 
 It's faster and doesn't have fragmentation issues, so it's perfect! So let's get started right away. Unfortunately there's a problem. There are no empty bookshelves laying around. All of the bookshelves are packed with books \*facepalm* Comparing to Mark & Sweep, twice the storage space is required. This certainly does no good. A new bookshelf could be purchased, but that seems a bit overkill. Next up a fundamentally different method will be tested.
 
+[[ref-count]]
 === Reference Count ===
 
 Is the reader the type that works on summer homework everyday, or the type that waits until the last two days to complete it? I happen to be in the later group. Because of this, I have recollections of my parents scolding me saying "It's because you're out playing everyday that things turn out like this!" With this in mind, how about throwing out the notion that the bookshelf needs to be arranged at the end of the year? If the bookshelf is arranged regularly, there's no need to fumble around at the end of the year doing it. 
@@ -179,28 +222,34 @@ image:images/bookshelf_rf_03.jpg[A Don't Toss Me Card for an unnecessary book]
 
 This method is referred to as the "Reference Count Algorithm". In the example the interests of the employees are referenced and counted. However in a more practical sense references of mutual objects are instead counted.
 
+[[ref-count-pros]]
 ==== Pros ====
 
 The benefit of this method is the burden is now decentralized. Cleaning the bookshelf at the end of the year is very difficult, but handling it on a normal basis is much more manageable. 
 
+[[ref-count-cons]]
 ==== Cons ====
 
 Annoyance is the main problem with this algorithm. With the Reference Count algorithm, one must ensure that they fill out their name and erase it later. However someone is likely to forget to do this. If someone doesn't fill out their name, a valuable book could get thrown out, and if someone forgets to cross out their name, a useless book is left sticking around. This is very annoying.
 
+[[how-fares]]
 === So How Fares The Arranging? ===
 
 The book arrangement is very annoying isn't it? Fragmentation can occur, another bookshelf could become necessary... However this is quite a distorted view of things to show how garbage collection works. A more practical solution would simply be to throw out books that no longer look necessary. Also there's the method of not sorting the books at all :-) In my case I simply threw out books that didn't look necessary to me. There's the chance that someone wanted to read that book, but oh well that's life! 
 
+[[quick-summary]]
 === A Quick Summary ===
 
 This section used an easy to understand explanation of garbage collection using the arrangement of books as an example. It was a bit distorted however. I wonder if there is still the reader who thinks to themselves "I want to try and implement this!", or feels that this explanation is not detailed enough.
 
+[[ruby-gc-structure]]
 == The Ruby GC Structure ==
 
 Now that the reader has become familiar with the basics of garbage collection algorithms, I'll explain the structure of the Ruby GC. First off it is, as mentioned previously, based on the Mark & Sweep algorithm. Since the basics of algorithm have been touched upon in the previous section, we'll look at how the Ruby GC implements it.
 
 WARNING: From here on out a good amount of knowledge in C and Ruby is required
 
+[[mark-sweep-ruby-gc]]
 === Mark & Sweep ===
 
 Below is a sample program that has been prepared for explanation purposes:
@@ -279,10 +328,12 @@ image:images/crubygc_ms_012.jpg[GC completion]
 
 Now unnecessary objects are removed and only active objects remain.
 
+[[conservative-gc]]
 === Conservative GC ===
 
 Now what about the talk about root that was put off from before? What exactly is root? Put simply it is the area in which pointers to objects are stored. More specifically it is the area where the machine stack, register, global variables, and Ruby internal global variable management table is stored. If an object is pointed to from a pointer in root, that object is considered active. Following the bookshelf example, the root is the bookshelf shared by everyone, and pointers in the root are considered to be the feeling that the book is important.
 
+[[object-lifetime]]
 ==== Object Lifetime Definition ====
 
 The definition of object lifetime is as follows:
@@ -291,6 +342,7 @@ The definition of object lifetime is as follows:
 * Objects pointed to by other active objects are themselves active
 * All other objects are considered to be garbage and collected accordingly
 
+[[pointer-determine]]
 ==== Determining Pointers That Reference Objects ====
 
 In the machine stack and register there are numerous values stored that have no relation to pointers. For example, `int` values or `char` values. Basically many values are mixed together without any type of sorting. With this in mind, how are pointers to objects identified? In CRuby, this is determined by whether or not the value is stored in the heap area. As it is bit difficult to put into words, I've written some Ruby code to help explain. The heap area is assumed to be from `0x0000` to `0x1000`. 
@@ -325,26 +377,32 @@ is_pointer_to_heap(integer) #=> true
 
 If there is an inactive object at address `0x0500`, it will be mistaken for an active object. With this method anything that looks like an object pointer is considered to be active. This is unfortunately something that can't be helped... This method of attempting to safely remove doubtful objects is a very conservative outlook, and thus this process is known as "Conservative GC". CRuby uses this conservative GC in its implementation.
 
+[[conservative-issues]]
 ==== Issues ====
 
 Isn't it strange though? Is it really okay that garbage objects are considered active? It seems as though a fatal bug could occur. The reason why such issues will not occur is because it's all about objects that are no longer necessary to the user. Since garbage objects are hidden from the user, they are not accessible. Therefore even if such objects are active they still won't cause the user issues directly. Of course, if such objects increase to much then memory will be exhausted. This is definitely an issue.
 
+[[conservative-weakness]]
 ==== Weaknesses ====
 
 The major weakness of Conservative GC is that it is limited in the algorithms that it can use. For example, the previously mentioned Copying GC cannot be utilized. This is because in order to transfer the entire object, the pointer to the object must also be rewritten. However, Conservative GC is unable to determine the difference between pointer and integer values. If an integer value was overwritten the result would be disastrous. It is likely that the result of `1+1` would change occasionally. 
 
+[[exact-gc]]
 === Exact GC ===
 
 The opposite of Conservative GC is known as Exact GC. Exact GC does not check the machine stack or registers. The image is that it manages object pointers. Due to this implementation, it is able to free all unnecessary objects. For those who would like to see an implementation of Exact GC, I recommend looking at http://tinyscheme.sourceforge.net/[TinyScheme] and other Scheme implementations. It is very simple and easy to understand. http://rubini.us/[Rubinius] also implements an Exact GC, but it is complex so I can't recommend it to beginners.
 
+[[exact-strengths]]
 ==== Strong Points ====
 
 The main strength of Exact GC is that it is able to implement a large number of GC algorithms. Algorithms that move around objects like Copying GC are possible. There is no concern over accidentally overwriting a value that was an integer. Of course, it is also able to implement the Mark & Sweep algorithm. 
 
+[[exact-weakness]]
 ==== Weaknesses ====
 
 For the GC implementor things are nice and simple, but from the user perspective it becomes complicated. For example, in CRuby extension libraries can be easily implemented, but if an Exact GC was used this would become very difficult. It is possible that the user could scatter object pointers about the stack and registers. If this was a single reference, it would be picked up as an object and mistakingly collected. Letting the user freely deal with object pointers becomes problematic. This means the user side would inevitably become more restricted.
 
+[[recent-trends]]
 == Recent Trends ==
 
 Lately there has been much activity around improving the CRuby GC implementation. In October of 2008, 3 possible RubyGC implementations were proposed at the Matsue (the town where Ruby was developed) http://www.math.nagoya-u.ac.jp/~garrigue/pro71/[71st Data Processing Academic Conference Programming Research Paper Meeting (Japanese)]. This event was explained by Koichi Sasada as "It's this kind, no that kind of event". I see :-). I will now provide a basic introduction to the three proposed GC implementations. The details are left out, and those seeking more information can refer to the links below. 
@@ -352,33 +410,40 @@ Lately there has been much activity around improving the CRuby GC implementation
 [WARNING]
 The links below are in Japanese, so please be warned!
 
-=== BitmapMarking GC ===
+[[bitmap-marking]]
+=== Bitmap Marking GC ===
 
 BitmapMarking GC is an improved GC that was proposed by Yukihiro Matsumoto (Ruby's creator) and myself. A proof of concept implementation was put into use in http://www.rubyenterpriseedition.com/index.html[Ruby Enterprise Edition (REE)]. However the REE BitmapMarking algorithm is O(n), and is not practical performance wise. The improved version looks to achieve O(1) performance. Whether or not it will be included in future CRuby versions is a difficult situation.
 
+[[bitmap-info]]
 ==== More Information ====
 
 * http://www.ustream.tv/recorded/838010[4th NaCL Study Group \~ BitmapMarkingGC ~] - A video of myself explaining the algorithm at the NaCL Study Group
 * http://www.narihiro.info/resource/presen/bitmap_gc.pdf[Utilization Of An Effective Bitmap Marking Implementation For Ruby] - A paper on the algorithm written by Matsumoto and myself
 * http://github.com/authorNari/ruby/tree/master/patch/gc_bitmap_by_align_to_v_1_9_0_4.patch[Patch] - A Practical Implementation
 
+[[snapshot-gc]]
 === Snapshot GC ===
 
 The product of the University of Tokyo Hikari Aikawa's research titled "Implementation of Snapshot GC on the Ruby Interpreter". This is an attempt to implement incremental garbage collection in the Ruby GC. I learned of a very beneficial feature, "You need to stick a write barrier here or it's no good!" in the research and implementation. At the moment it can only run in miniruby, but I look forward to how it progresses. 
 
+[[snapshot-info]]
 ==== More Information ====
 
 * http://www.yuasa.kuis.kyoto-u.ac.jp/~aikawa/files/presentation.ppt[Support Of Write Barrier Insertion in The CRuby Interpreter] - Mr. Aikawa was kind enough to distribute research materials which should provide a starting point for those interested.
 
+[[mostly-copying]]
 === Mostly Copying GC ===
 
 The product of the University of Electro Communication Tomoharu Ugawa's research titled "Mostly Copying GC Implementation For The RubyVM". This algorithm is an attempt to introduce Copying GC to a Conservative GC. If this algorithm is implemented it would help to improve the fragmentation issue. Mr. Matsumoto stated "If it's all right I'd like to add it sometime tomorrow." Wow. Currently there is only a patch against YARV before it was merged into 1.9, but I look forward to how it turns out.
 
+[[mostly-copying-info]]
 ==== More Information ====
 
 * http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/19909[ruby-core:19909] - Ruby Core thread 19909 contains the published materials regarding Mostly Copying GC
 * http://wiki.livedoor.jp/author_nari/d/GC/extend/MostlyCopyingGC(Bartlett%201989)[MostlyCopyingGC(Bartlett 1989)] - Those interested in the details of the algorithm can read more about it here
 
+[[related-documents]]
 == Related Documents ==
 
 * http://i.loveruby.net/ja/rhg/book/gc.html[RHG (Ruby Hacking Guide) Chapter 5: Garbage Collection] - Those wanting to learn more about the RubyGC can read more on it in the Ruby Hacking Guide (RHG) by Minero Aoki
@@ -386,18 +451,21 @@ The product of the University of Electro Communication Tomoharu Ugawa's research
 * http://wiki.livedoor.jp/author_nari/d/GC[Garbage Collection In Detail] - Those wishing to know more about Garbage Collection algorithms can take a look at the wiki that I'm working on
 * http://www.amazon.co.jp/Garbage-Collection-Algorithms-Automatic-Management/dp/0471941484/[Garbage Collection: Algorithms for Automatic Dynamic Memory Management] - For those serious about learning garbage collection I recommend this book. It is a very comprehensive book on the matter
 
+[[conclusion]]
 == Conclusion ==
 
 Thank you to those of you that came this far. I hope that reading this article has given you even a little interest in garbage collection. Unless the GC in your head has judged this article to be garbage :-)
 
+[[about-the-author]]
 == About The Author ==
 
 http://d.hatena.ne.jp/authorNari/[nari]
 
 Member of the http://www.netlab.jp/[Network Applied Communication Laboratory]. Likes GC. Not to found of real life garbage collection though.
 
+[[about-the-translator]]
 == About The Translator ==
 
-Hello I'm Chris White and a passionate Rubyist. I've been studying Japanese for many years, and enjoy doing technical translations. As someone who loves learning more about the inner workings of Ruby this was an enjoyable document to work on! Thank you to nari-san for such an interesting article!
+Hello I'm Chris White, a passionate Rubyist. I've been studying Japanese for many years, and enjoy doing technical translations. As someone who loves learning more about the inner workings of Ruby this was an enjoyable document to work on! Thank you to nari-san for such an interesting article!
 
 As a final note I've removed the author's contact information in the "About The Author" section to avoid surprise English emails. If you would like to send your thoughts, please contact me instead and I will pass them on! You can reach me at cwprogram at live dot com.

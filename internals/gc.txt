@@ -379,4 +379,11 @@ The product of the University of Electro Communication Tomoharu Ugawa's research
 * http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/19909[ruby-core:19909] - Ruby Core thread 19909 contains the published materials regarding Mostly Copying GC
 * http://wiki.livedoor.jp/author_nari/d/GC/extend/MostlyCopyingGC(Bartlett%201989)[MostlyCopyingGC(Bartlett 1989)] - Those interested in the details of the algorithm can read more about it here
 
+== Related Documents ==
+
+* http://i.loveruby.net/ja/rhg/book/gc.html[RHG (Ruby Hacking Guide) Chapter 5: Garbage Collection] - Those wanting to learn more about the RubyGC can read more on it in the Ruby Hacking Guide (RHG) by Minero Aoki
+* http://matsu-www.is.titech.ac.jp/~endo/gc/gc.pdf[Garbage Collection Overview] - An easy to understand explanation of garbage collection in general
+* http://wiki.livedoor.jp/author_nari/d/GC[Garbage Collection In Detail] - Those wishing to know more about Garbage Collection algorithms can take a look at the wiki that I'm working on
+* http://www.amazon.co.jp/Garbage-Collection-Algorithms-Automatic-Management/dp/0471941484/[Garbage Collection: Algorithms for Automatic Dynamic Memory Management] - For those serious about learning garbage collection I recommend this book. It is a very comprehensive book on the matter. 
+
 

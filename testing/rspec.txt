@@ -1,0 +1,18 @@
+= RSpec In Practice =
+:Author: @ukstudio (Translator: @cwgem )
+:Date: September 28th 2011
+:Source: http://jp.rubyist.net/magazine/?0035-RSpecInPractice
+
+[NOTE]
+This document is a translation of a Japanese article by ukstudio on the topic of writing RSpec tests. It was published in http://jp.rubyist.net/magazine/?0035-RSpecInPractice[Rubyist Magazine Volume 35]. 
+
+== Introduction ==
+
+This article is meant to serve as an exploration of the RSpec testing framework. It is not intended to be an introduction, but rather aimed at presenting relatively practical uses. With this in mind, the article targets those who are at minimum familiar with `it`, `describe`, and testing fundamentals in general.
+
+[NOTE]
+I've left out the translation of the second paragraph as it targets Japan users specifically and does not make sense to have in the context of a translation targeted towards English-speaking users.
+
+This article hopes to further increase the amount of RSpec documentation available by teaching RSpec usage to those interested, and those who are using it but feel they haven't mastered it properly.
+
+

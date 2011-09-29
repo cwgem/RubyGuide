@@ -55,4 +55,102 @@ The above test code is written using RSpec to test stack construction through th
 
 xUnit generally has test methods defined in a more flat manner (though this style has been changing as of late), so one could consider this code to be "xUnit like". The test method is simply rewritten to use `it` instead, and the `before` block is used like a `setup` method.
 
+=== describe and context ===
 
+Now it's time to take the code and make a few adjustments to it. First off will be the usage of `describe`. While there should always be at least one `describe` present, it is possible to have them at the same level, or even nested.
+
+[source,ruby]
+-----
+describe Stack do
+  before do
+    @stack = Stack.new
+  end
+
+  describe '#push' do
+    it 'returns the pushed value' do
+      @stack.push('value').should eq 'value'
+    end
+
+    it 'throws an exception if nil is pushed' do
+      lambda { @stack.push(nil) }.should raise_error(ArgumentError)
+    end
+  end
+
+  describe '#pop' do
+    it 'when the stack is empty, #pop will return nil' do
+      @stack.pop.should be_nil
+    end
+
+    it 'when the stack contains values, #pop will return the last value' do
+      @stack.push 'value1'
+      @stack.push 'value2'
+      @stack.pop.should eq 'value2'
+      @stack.pop.should eq 'value1'
+    end
+  end
+
+  describe '#size' do
+    it '#size returns the size of the stack' do
+      @stack.size.should eq 0
+
+      @stack.push 'value'
+      @stack.size.should eq 1
+    end
+  end
+end
+-----
+
+Using `describe` helps to establish structure in the test code. Because each and every test case is grouped, it makes it easier to understand what the functionality is being tested. 
+
+Next is the usage of `context`. `context` is just an alias for `describe`, but it serves a different purposes. To put it simply, `describe` is meant to indicate what is being tested, while `context` is meant to describe the state of the test when it is run.
+
+[source,ruby]
+-----
+describe Stack do
+  before do
+    @stack = Stack.new
+  end
+  describe '#push' do
+    context 'normal value' do
+      it 'returns the pushed value' do
+        @stack.push('value').should eq 'value'
+      end
+    end
+
+    context 'nil is pushed' do
+      it 'throws an exception' do
+        lambda { @stack.push(nil) }.should raise_error(ArgumentError)
+      end
+    end
+  end
+
+  describe '#pop' do
+    context 'the stack is empty' do
+      it 'nil is returned' do
+        @stack.pop.should be_nil
+      end
+    end
+
+    context 'the stack contains values' do
+      it 'the last value is returned' do
+        @stack.push 'value1'
+        @stack.push 'value2'
+        @stack.pop.should eq 'value2'
+      end
+    end
+  end
+
+  describe '#size' do
+    it 'returns the size of the stack' do
+      @stack.size.should eq 0
+
+      @stack.push 'value'
+      @stack.size.should eq 1
+    end
+  end
+end
+-----
+
+In this case, `describe` is used to categorize tests by individual methods. The reason for this being that test cases are generally written to target specific methods, so this separation makes writing tests easier to manage. It also has the added benefit of being easier to read.
+
+However, there are times when the target of the tests are not methods alone. Often times communication between several objects is being tested. In this case the user should use `describe` in a manner that is easiest for them to understand. One mustn't take too much time fussing over method separation.

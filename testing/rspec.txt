@@ -248,6 +248,37 @@ end
 
 As the code shows, the usage of `subject` makes it so there is only one assertion per test case. In general it's a good idea to have one assertion per test case, and using `subject` makes it more natural to write them as such.
 
-=== Nested describes and subject ===
+=== subject and nested describe ===
+
+There are cases in which a test will want to work with a related object that was previously tested. For example, a `User` class with a related `Profile` class. In this case, if `subject` is used to omit the receiver of `should`, it won't be possible to access the related object. To resolve this issue a nested `describe` can be used with another `subject` declaration.
+
+[source,ruby]
+-----
+describe User, '#create!' do
+  before { @user=User.create! }
+  subject { @user }
+  it { should_not be_new_record }
+  
+  describe Profile do
+    subject { @user.profile }
+    it { should_not be_new_record }
+    its(:name) { should eq 'AKAMATSU Yuki' }
+  end
+end
+-----
+
+In this way it is possible to test a related object from a previous test. This situation is fairly common for those developing Rails applications. 
+
+Another solution is to use `its`, which is useful when there are few areas which require testing.
+
+[source,ruby]
+-----
+describe User, '#create!' do
+  subject { User.create! }
+  it { should_not be_new_record }
+  its(:profile) { should_not be_new_record }
+  its('profile.name') { should eq 'AKAMATSU Yuki' }
+end
+-----
 
 

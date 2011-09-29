@@ -198,3 +198,56 @@ end
 -----
 
 In this way `describe`, `context`, and `it` are utilized in sequential order to provide step by step test code to present technical specifications. The usage of `describe` and `context` to organize application specification helps ease the design process.
+
+=== subject ===
+
+In RSpec when `subject` is used the receiver of `should` can be omitted. Rewriting the previous code to use `subject` gives:
+
+[source,ruby]
+-----
+describe '#pop' do
+  subject { @stack.pop }
+  
+  context 'the stack is empty' do
+    it 'returns nil' do
+      should be_nil
+    end
+  end
+  
+  context 'the stack contains values' do
+    before do
+      @stack.push 'value1'
+      @stack.push 'value2'
+    end
+    
+    it 'returns the last value' do
+      should eq 'value2'
+    end
+  end
+end
+-----
+
+The merit of `subject` is that it clearly indicates the target of the test, and it requires that a single test case can only contain a single assertion. When writing a test, it puts importance on the awareness about what is currently being tested. While `describe` tends to be very clear in intentions, `subject` is a bit weak in comparison. `subject` helps to split out often generally vague sections, such as whether the state of an object after method invocation, or the return of a method is being tested.
+
+[source,ruby]
+-----
+describe Array, '#delete' do
+  subject { [1,2,3].delete(3) }
+  it { should eq 3 }
+end
+
+describe Array, '#delete' do
+  before do
+    @array = [1,2,3]
+    @array.delete(3)
+  end
+  subject { @array }
+  its(:size) { should eq 2 }
+end
+-----
+
+As the code shows, the usage of `subject` makes it so there is only one assertion per test case. In general it's a good idea to have one assertion per test case, and using `subject` makes it more natural to write them as such.
+
+=== Nested describes and subject ===
+
+

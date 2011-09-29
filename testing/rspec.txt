@@ -15,4 +15,44 @@ I've left out the translation of the second paragraph as it targets Japan users 
 
 This article hopes to further increase the amount of RSpec documentation available by teaching RSpec usage to those interested, and those who are using it but feel they haven't mastered it properly.
 
+== From xUnit Like Code To RSpec Style ==
+
+=== xUnit like RSpec code ===
+
+"xUnit like code" is essentially code that does not properly utilize RSpec features, and treats `it` the same as xUnit test methods.
+
+[source,ruby]
+-----
+describe Stack do
+  before do
+    @stack = Stack.new
+  end
+
+  it 'the return value of #push should equal the pushed value' do
+    @stack.push('value').should eq 'value'
+  end
+  it 'when the stack is empty, #pop should return nil' do
+    @stack.pop.should be_nil
+  end
+
+  it 'When the stack contains values, #pop returns the last value' do
+    @stack.push 'value1'
+    @stack.push 'value2'
+    @stack.pop.should eq 'value2'
+    @stack.pop.should eq 'value1'
+  end
+
+  it '#size returns the size of the stack' do
+    @stack.size.should eq 0
+
+    @stack.push 'value'
+    @stack.size.should eq 1
+  end
+end
+-----
+
+The above test code is written using RSpec to test stack construction through the `Stack` class. `Stack` has 3 methods, `push`, `pop`, and `size`.
+
+xUnit generally has test methods defined in a more flat manner (though this style has been changing as of late), so one could consider this code to be "xUnit like". The test method is simply rewritten to use `it` instead, and the `before` block is used like a `setup` method.
+
 

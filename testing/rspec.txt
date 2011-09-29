@@ -154,3 +154,47 @@ end
 In this case, `describe` is used to categorize tests by individual methods. The reason for this being that test cases are generally written to target specific methods, so this separation makes writing tests easier to manage. It also has the added benefit of being easier to read.
 
 However, there are times when the target of the tests are not methods alone. Often times communication between several objects is being tested. In this case the user should use `describe` in a manner that is easiest for them to understand. One mustn't take too much time fussing over method separation.
+
+=== Step by step technical specifications in test code ===
+
+I personally believe that the general concept behind `describe` and `context` is extremely important. This is because it has the capability to be used as a tool to lay out technical specifications through test code. 
+
+For example, when writing test code for the `Stack` class, the general thought process would start with the implementation of methods. First is the push method implementation:
+
+[source,ruby]
+-----
+describe Stack do
+  describe '#push' do
+  end
+end
+-----
+
+Now that there is a method to work with, the next step is thinking about how to call the method. In the case of `push`, the first case is the storage the value passed in. First the test case is written using `it`, disregarding for now any other `context`:
+
+[source,ruby]
+-----
+describe Stack do
+  describe '#push' do
+    it 'stores the value'
+  end
+end
+-----
+
+When considering proper values to pass in, it is also important to consider improper values. For example, when `nil` is passed in an exception is thrown. Since this situation is different from that of a proper value, `context` must be utilized:
+
+[source,ruby]
+-----
+describe Stack do
+  describe '#push' do
+    context 'proper value' do
+      it 'stores the value'
+    end
+
+    context 'nil value' do
+      it 'throws an exception'
+    end
+  end
+end
+-----
+
+In this way `describe`, `context`, and `it` are utilized in sequential order to provide step by step test code to present technical specifications. The usage of `describe` and `context` to organize application specification helps ease the design process.

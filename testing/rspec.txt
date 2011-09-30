@@ -3,9 +3,26 @@
 :Date: September 28th 2011
 :Source: http://jp.rubyist.net/magazine/?0035-RSpecInPractice
 
+* <<introduction,Introduction>>
+* <<xunit-to-rspec,From xUnit Like Code To RSpec Style>>
+** <<xunit-like-rspec,xUnit like RSpec code>>
+** <<describe-and-context,describe and context>>
+*** <<step-by-step-specs,Step by step technical specifications in test code>>
+** <<subject,subject>>
+** <<subject-nested-describe,subject and nested describe>>
+** <<it-string-passing,Passing or not passing strings to it>>
+** <<let,Data sharing with let>>
+** <<shared-context,shared_context>>
+** <<related-info,Related Information>>
+** <<conclusion,Conclusion>>
+** <<about-the-author,About The Author>>
+** <<about-translator,About The Translator>>
+
+
 [NOTE]
 This document is a translation of a Japanese article by ukstudio on the topic of writing RSpec tests. It was published in http://jp.rubyist.net/magazine/?0035-RSpecInPractice[Rubyist Magazine Volume 35]. 
 
+[[introduction]]
 == Introduction ==
 
 This article is meant to serve as an exploration of the RSpec testing framework. It is not intended to be an introduction, but rather aimed at presenting its practical uses. At minimum the reader should be familiar with `it`, `describe`, and testing fundamentals in general.
@@ -15,8 +32,10 @@ I've left out the translation of the second paragraph as it targets Japan users 
 
 This article hopes to improve on the availability of RSpec documentation by exploring RSpec usage for those interested, or those who wish to improve master of it.
 
+[[xunit-to-rspec]]
 == From xUnit Like Code To RSpec Style ==
 
+[[xunit-like-rspec]]
 === xUnit like RSpec code ===
 
 "xUnit like code" is essentially code that does not properly utilize RSpec features, and treats `it` the same as xUnit test methods.
@@ -55,6 +74,7 @@ The above test code is written using RSpec to test stack construction through th
 
 xUnit generally has test methods defined in a more flat manner (though this style has been changing as of late), so one could consider this code to be "xUnit like". The test method is simply rewritten to use `it` instead, and the `before` block is used like a `setup` method.
 
+[[describe-and-context]]
 === describe and context ===
 
 We'll take this code and make a few adjustments to it. First off will be the usage of `describe`. While there should always be at least one `describe` present, it is possible to have multiple declarations at the same level, or even nested.
@@ -155,7 +175,8 @@ In this case, `describe` is used to categorize tests by individual methods. The 
 
 However, there are times when the target of the tests are not methods alone. Often times communication between several objects is being tested. In this case the user should use `describe` in a manner that is easiest for them to understand given the situation. One mustn't take too much time fussing over method separation.
 
-=== Step by step technical specifications in test code ===
+[[step-by-step-specs]]
+==== Step by step technical specifications in test code ====
 
 I personally believe that the general concept behind `describe` and `context` is extremely important. This is because it has the capability to be used as a tool to lay out technical specifications through test code. 
 
@@ -199,6 +220,7 @@ end
 
 In this way `describe`, `context`, and `it` are utilized in sequential order to provide step by step test code which presents technical specifications. The usage of `describe` and `context` to organize application specification helps ease the design process.
 
+[[subject]]
 === subject ===
 
 In RSpec when `subject` is used the receiver of `should` can be omitted. Rewriting the previous code to use `subject` gives:
@@ -248,6 +270,7 @@ end
 
 As shown in the code, the usage of `subject` makes it so there is only one assertion per test case. In general it's a good idea to write tests this way, and using `subject` makes it more natural to write them as such.
 
+[[subject-nested-describe]]
 === subject and nested describe ===
 
 There are cases in which test code will need to operate on a related object that was previously tested. For example, a `User` class with a related `Profile` class. In this case, if `subject` is used to omit the receiver of `should`, it won't be possible to access the related object. To resolve this issue a nested `describe` can be used with another `subject` declaration.
@@ -281,6 +304,7 @@ describe User, '#create!' do
 end
 -----
 
+[[it-string-passing]]
 === Passing or not passing strings to it ===
 
 Now then, some of you may have already noticed that the style of how the tests were written changed throughout the article. For instance, `it` can have the string passed to it omitted. When used this way RSpec code such as "it should be nil" can be read like a normal English sentence. 
@@ -376,6 +400,7 @@ In conclusion, I recommend using `it` without passing in a string. The strongest
 
 While I recommend omitting the string, there are those who feel it is more natural to take the opposite approach. You should use your best judgement, and what is most comfortable to decide which method you agree with. Both have advantages and disadvantages, do there is no strictly correct answer.
 
+[[let]]
 === Data sharing with let ===
 
 In RSpec there is a function known as `let`. Compared to `subject` and other features, the usage is hard to grasp for a lot of users, so I'll attempt to explain its usage. 
@@ -469,6 +494,7 @@ describe Stack, '#pop' do
 end
 -----
 
+[[shared-context]]
 === shared_context ===
 
 As mentioned before, RSpec's `context` is used to separate out the state of the test case. However as `context` is simply an alias of `describe`, it doesn't really do anything by itself. In order to actually implement the context, it is necessary to use `before` and `subject`.
@@ -547,6 +573,7 @@ end
 
 By using `shared_context` in this manner, shared functionality can be consolidated into a single area. It's also possible to define `shared_context` in another file and `require` it in the appropriate locations.
 
+[[related-info]]
 == Related Information ==
 
 [NOTE]
@@ -558,6 +585,7 @@ Relish uses Cucumber scenarios as a documentation format. With this in mind it c
 
 These types of problems are more difficult, so the best solution is to Google around or ask someone. Of course there's always figuring it out on your own. If you find it necessary to ask someone for help, asking around in places like http://www.twitter.com[Twitter] is likely to get an answer. 
 
+[[conclusion]]
 == Conclusion ==
 
 I've often heard of RSpec being referred to as difficult or complaints about the syntax being too complicated. The reason for this seems to me that Rubyists are used to thinking in terms of Ruby code, and that there is a gap between that and RSpec DSL. Honestly I believe this comes down to getting accustomed to it. There will always be those who simply cannot grasp how the system works.
@@ -568,12 +596,14 @@ As you progress I believe you will start to feel a need to make test code more D
 
 The knowledge presented here does not encompass everything I know. There's a lot of other information I'd like to present, but that would take an entire book to cover so I hope you don't mind me leaving it out. I hope that this article provides a useful reference for those wanting to improve their RSpec mastery.
 
+[[about-the-author]]
 == About The Author ==
 
 Akamatsu Yuki (http://twitter.com/ukstudio[@ukstudio])
 
 Freelance Ruby programmer. Most recent work is development for http://scaleout.jp/[ScaleOut]. Currently in the process of writing an introductory book to TDD in Ruby. If all goes well it will be available sometime next year. Please buy it when it comes out.
 
+[[about-translator]]
 == About The Translator ==
 
-Hello I'm Chris White, a passionate Rubyist. I've been studying Japanese for many years, and enjoy doing technical translations. As test driven development is very important within the Ruby community, I felt translation of this article would benefit the community as a whole. @ukstudio's article was incredibly insightful and am glad to have translated it! I hope you enjoyed it as much as I did!
+Hello I'm Chris White (http://www.twitter.com/cwgem[@cwgem]), a passionate Rubyist. I've been studying Japanese for many years, and enjoy doing technical translations. As test driven development is very important within the Ruby community, I felt translation of this article would benefit the community as a whole. @ukstudio's article was incredibly insightful and am glad to have translated it! I hope you enjoyed it as much as I did!

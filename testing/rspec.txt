@@ -315,7 +315,7 @@ The reason for this is that passing a string to `it` has a similar problem to la
 
 The same can be said about RSpec's `it` and passing a string to it. Situations where the string passed to `it` being left as is while the test code is modified happens quite often. Also by constantly passing strings to `it`, the test code becomes much longer.
 
-However, that is not to say that leaving the string out is without problems. For instance, the documentation produced by RSpec's `--format documentation` can become more difficult to read. As an example, in the code from the `Stack` class the "returns the last value" code becomes "should eq 'value1'". This makes it impossible to discern what is being tested.
+However, that is not to say that leaving the string out is without problems. For instance, the documentation produced by RSpec's `--format documentation` can become more difficult to read. As an example, in the code from the `Stack` class the "returns the last value" code becomes "should eq \'value1'". This makes it impossible to discern what is being tested.
 
 [source,text]
 -----

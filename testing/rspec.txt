@@ -545,4 +545,10 @@ describe Stack do
 end
 -----
 
+== Related Information ==
 
+== About The Author ===
+
+== About The Translator ==
+
+Hello I'm Chris White, a passionate Rubyist. I've been studying Japanese for many years, and enjoy doing technical translations. As test driven development is very important within the Ruby community, I felt translation of this article would benefit the community as a whole. @ukstudio's article was incredibly insightful and am glad to have translated it! I hope you enjoyed it as much as I did!

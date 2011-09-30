@@ -545,6 +545,8 @@ describe Stack do
 end
 -----
 
+By using `shared_context` in this manner, shared functionality can be consolidated into a single area. It's also possible to define `shared_context` in another file and `require` it in the appropriate locations.
+
 == Related Information ==
 
 == About The Author ===

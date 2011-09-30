@@ -8,12 +8,12 @@ This document is a translation of a Japanese article by ukstudio on the topic of
 
 == Introduction ==
 
-This article is meant to serve as an exploration of the RSpec testing framework. It is not intended to be an introduction, but rather aimed at presenting relatively practical uses. With this in mind, the article targets those who are at minimum familiar with `it`, `describe`, and testing fundamentals in general.
+This article is meant to serve as an exploration of the RSpec testing framework. It is not intended to be an introduction, but rather aimed at presenting its practical uses. At minimum the reader should be familiar with `it`, `describe`, and testing fundamentals in general.
 
 [NOTE]
 I've left out the translation of the second paragraph as it targets Japan users specifically and does not make sense to have in the context of a translation targeted towards English-speaking users.
 
-This article hopes to further increase the amount of RSpec documentation available by teaching RSpec usage to those interested, and those who are using it but feel they haven't mastered it properly.
+This article hopes to improve on the availability of RSpec documentation by exploring RSpec usage for those interested, or those who wish to improve master of it.
 
 == From xUnit Like Code To RSpec Style ==
 
@@ -57,7 +57,7 @@ xUnit generally has test methods defined in a more flat manner (though this styl
 
 === describe and context ===
 
-Now it's time to take the code and make a few adjustments to it. First off will be the usage of `describe`. While there should always be at least one `describe` present, it is possible to have them at the same level, or even nested.
+We'll take this code and make a few adjustments to it. First off will be the usage of `describe`. While there should always be at least one `describe` present, it is possible to have multiple declarations at the same level, or even nested.
 
 [source,ruby]
 -----
@@ -102,7 +102,7 @@ end
 
 Using `describe` helps to establish structure in the test code. Because each and every test case is grouped, it makes it easier to understand what the functionality is being tested. 
 
-Next is the usage of `context`. `context` is just an alias for `describe`, but it serves a different purposes. To put it simply, `describe` is meant to indicate what is being tested, while `context` is meant to describe the state of the test when it is run.
+Next is the usage of `context`. `context` is just an alias for `describe`, but it serves a different purpose. To put it simply, `describe` is meant to indicate what is being tested, while `context` is meant to describe the state of the test when it is run.
 
 [source,ruby]
 -----
@@ -151,9 +151,9 @@ describe Stack do
 end
 -----
 
-In this case, `describe` is used to categorize tests by individual methods. The reason for this being that test cases are generally written to target specific methods, so this separation makes writing tests easier to manage. It also has the added benefit of being easier to read.
+In this case, `describe` is used to categorize tests by individual methods. The reason for this being that test cases are generally written to target specific methods, so this separation helps improve test code organization. It also has the added benefit of being easier to read.
 
-However, there are times when the target of the tests are not methods alone. Often times communication between several objects is being tested. In this case the user should use `describe` in a manner that is easiest for them to understand. One mustn't take too much time fussing over method separation.
+However, there are times when the target of the tests are not methods alone. Often times communication between several objects is being tested. In this case the user should use `describe` in a manner that is easiest for them to understand given the situation. One mustn't take too much time fussing over method separation.
 
 === Step by step technical specifications in test code ===
 
@@ -169,7 +169,7 @@ describe Stack do
 end
 -----
 
-Now that there is a method to work with, the next step is thinking about how to call the method. In the case of `push`, the first case is the storage the value passed in. First the test case is written using `it`, disregarding for now any other `context`:
+Now that there is a method to work with, the next step is thinking about how to call the method. In the case of `push`, the first case is the storage of the value passed in. First the test case is written using `it`, disregarding for now any other `context`:
 
 [source,ruby]
 -----
@@ -197,7 +197,7 @@ describe Stack do
 end
 -----
 
-In this way `describe`, `context`, and `it` are utilized in sequential order to provide step by step test code to present technical specifications. The usage of `describe` and `context` to organize application specification helps ease the design process.
+In this way `describe`, `context`, and `it` are utilized in sequential order to provide step by step test code which presents technical specifications. The usage of `describe` and `context` to organize application specification helps ease the design process.
 
 === subject ===
 
@@ -227,7 +227,7 @@ describe '#pop' do
 end
 -----
 
-The merit of `subject` is that it clearly indicates the target of the test, and it requires that a single test case can only contain a single assertion. When writing a test, it puts importance on the awareness about what is currently being tested. While `describe` tends to be very clear in intentions, `subject` is a bit weak in comparison. `subject` helps to split out often generally vague sections, such as whether the state of an object after method invocation, or the return of a method is being tested.
+The merit of `subject` is that it clearly indicates the target of the test, and it requires that a single test case can only contain a single assertion. When writing a test, it puts importance on the awareness about what is currently being tested. While `describe` tends to be very clear in intentions, `subject` is a bit weak in comparison. The usage `subject` is splitting out often generally vague sections, such as whether the state of an object after method invocation, or the return of a method is being tested.
 
 [source,ruby]
 -----
@@ -246,11 +246,11 @@ describe Array, '#delete' do
 end
 -----
 
-As the code shows, the usage of `subject` makes it so there is only one assertion per test case. In general it's a good idea to have one assertion per test case, and using `subject` makes it more natural to write them as such.
+As shown in the code, the usage of `subject` makes it so there is only one assertion per test case. In general it's a good idea to write tests this way, and using `subject` makes it more natural to write them as such.
 
 === subject and nested describe ===
 
-There are cases in which a test will want to work with a related object that was previously tested. For example, a `User` class with a related `Profile` class. In this case, if `subject` is used to omit the receiver of `should`, it won't be possible to access the related object. To resolve this issue a nested `describe` can be used with another `subject` declaration.
+There are cases in which test code will need to operate on a related object that was previously tested. For example, a `User` class with a related `Profile` class. In this case, if `subject` is used to omit the receiver of `should`, it won't be possible to access the related object. To resolve this issue a nested `describe` can be used with another `subject` declaration.
 
 [source,ruby]
 -----
@@ -267,7 +267,7 @@ describe User, '#create!' do
 end
 -----
 
-In this way it is possible to test a related object from a previous test. This situation is fairly common for those developing Rails applications. 
+Using this method it is possible to test the related object from a previous test. This situation is fairly common for those developing Rails applications. 
 
 Another solution is to use `its`, which is useful when there are few areas which require testing.
 
@@ -285,13 +285,13 @@ end
 
 Now then, some of you may have already noticed that the style of how the tests were written changed throughout the article. For instance, `it` can have the string passed to it omitted. When used this way RSpec code such as "it should be nil" can be read like a normal English sentence. 
 
-A common debate regarding RSpec usage is whether or not to pass a string to `it`. I notice that users who tend to constantly use the most up to date versions of RSpec often lean towards leaving out the string. Personally I usually leave the string out and let the RSpec code itself express the tests.
+A common debate regarding RSpec usage is whether or not to pass a string to `it`. I notice that users who tend to constantly use the most up to date versions of RSpec often lean towards leaving out the string. I agree with this sediment and would rather let the RSpec code speak for itself.
 
-The reason for this is that passing a string to `it` has a similar problem to lacking separation between code and comments. One of the recent trends in writing of good code is the principle of "writing code that can be understood without relying on comments." The logic is that when dealing with code and comments, just modifying one leaves the other inconsistent, violating the principle of DRY (Don't Repeat Yourself). 
+The reason for this is that passing a string to `it` has a similar problem to lacking separation between code and comments. One of the recent trends in writing good code is the principle of "writing code that can be understood without relying on comments." The logic is that when dealing with code and comments, just modifying one leaves the other inconsistent, violating the principle of DRY (Don't Repeat Yourself). 
 
 The same can be said about RSpec's `it` and passing a string to it. Situations where the string passed to `it` being left as is while the test code is modified happens quite often. Also by constantly passing strings to `it`, the test code becomes much longer.
 
-However, that is not to say that leaving the string out is without problems. For instance, the documentation produced by RSpec's `--format documentation` can become more difficult to read. As an example, in the code from the `Stack` class the "returns the last value" code becomes "should eq 'value1'". This makes it impossible to discern the specification being tested.
+However, that is not to say that leaving the string out is without problems. For instance, the documentation produced by RSpec's `--format documentation` can become more difficult to read. As an example, in the code from the `Stack` class the "returns the last value" code becomes "should eq 'value1'". This makes it impossible to discern what is being tested.
 
 [source,text]
 -----
@@ -370,11 +370,11 @@ Stack
 
 By using `context` to explicitly declare the value, it is easier to discern that RSpec's output means the last value will be returned. Using a customer matcher, the code will be output as is and is even easier to read.
 
-However, I personally don't take it this far. At most I would worry about the wording of `context`. The reason being that as a programmer, reading the test code is more important than reading the documentation. With this in mind it would not seem reasonable to just read the RSpec output alone. This is why I'm less concerned about sentences in the output looking odd as long as the test code is easy to read.
+However, I personally don't take it this far. At most I would worry about the wording of `context`. The reason being that as a programmer, reading the test code is more important than reading the documentation. With this in mind it would seem unreasonable to just read the RSpec output alone. This is why I'm less concerned about sentences in the output looking odd as long as the test code is easy to read.
 
 In conclusion, I recommend using `it` without passing in a string. The strongest reason for this being that mixing strings and test code violates the DRY principle. Also the samples given here are small so the issue with size is not as apparent. However it's normal for test cases to be much more numerous. In these cases leaving out the string results in more compact test code.
 
-While I recommend omitting the string, there are those who feel it is more natural to not do so. You should use your best judgement and what is most comfortable to decide which method you agree with. Both have advantages and disadvantages, there is no strictly correct answer.
+While I recommend omitting the string, there are those who feel it is more natural to take the opposite approach. You should use your best judgement, and what is most comfortable to decide which method you agree with. Both have advantages and disadvantages, do there is no strictly correct answer.
 
 === Data sharing with let ===
 
@@ -388,7 +388,7 @@ describe 'let' do
 end
 -----
 
-`let` takes the evaluation result of the block passed in, then stores the result in a variable of the same name as the symbol name given in the argument. In the above example, the evaluation result of the block is "foo" and the symbol name is `:foo`, so "foo" will be stored in a variable named `foo`. This method utilizes lazy evaluation, so the block won't be evaluated unless explicitly called. Results of the block evaluation will be cached and accessible within the same test case, ensuring that multiple calls will not produce multiple evaluations of the block.
+`let` takes the evaluation result of the block passed in, then stores the result in a variable of the same name as the symbol given in the argument. In the above example, the evaluation result of the block is "foo" and the symbol name is `:foo`, so "foo" will be stored in a variable named `foo`. This method utilizes lazy evaluation, so the block won't be evaluated unless explicitly called. Results of the block evaluation will be cached and accessible within the same test case, ensuring that multiple calls will not produce multiple evaluations of the block.
 
 When writing tests, there are often cases where the methods being called are the same, but data is slightly different. Previously this was addressed through writing out the same processing code using `before` inside of `describe` and `context`. Now that there's `let`, we can be a little smarter about how the code is written.
 
@@ -473,7 +473,7 @@ end
 
 As mentioned before, RSpec's `context` is used to separate out the state of the test case. However as `context` is simply an alias of `describe`, it doesn't really do anything by itself. In order to actually implement the context, it is necessary to use `before` and `subject`.
 
-There are often times when the same context cannot be combined into a single context. For example, when the tests for several methods utilize the same context. 
+There are often times when the same context cannot be combined into a single `context` block. For example, when the tests for several methods utilize the same context. 
 
 [source,ruby]
 -----
@@ -515,7 +515,7 @@ context '#context_b' do
 end
 -----
 
-Even though the methods are scattered about, it still appears to be reasonably well organized. However there is a big problem with this. As mentioned before, specifications should be noted in step by step test code. In order to achieve the writing of test code starts with the separation of `describe`. However writing tests in this manner means that the context of the test will come before the description of what is being tested, which is not very natural. For this reason I do not recommend this style.
+Even though the methods are scattered about, it still appears to be reasonably well organized. However there is a big problem with this. As mentioned before, specifications should be noted in step by step test code. In order to achieve this, writing of test code starts with writing out separate `describe` blocks. However writing tests using nested `context` blocks as shown means that the context of the test will come before the description of what is being tested, which is not very natural. For this reason I do not recommend this style.
 
 `shared_context` can be used to solve this issue. As the name states `shared_context` shares the context (state at the time of running the test) between different tests. 
 
@@ -552,13 +552,27 @@ By using `shared_context` in this manner, shared functionality can be consolidat
 [NOTE]
 I've left out translation of some content here as it targets Japanese speakers
 
-When using RSpec, an issue that often crops up is wanting to know more about how functionality works, but being unsure about where to start. At times like these the documentation is the best resource. http://www.rspec.info[rspec.info] is not that frequently updated, so I recommend using Relish's http://www.relishapp.com/rspec[RSpec Documentation] instead.
+When using RSpec, an issue that often crops up is wanting to know more about how functionality works, but the user is unsure about where to start. At times like these the documentation is the best resource. http://www.rspec.info[rspec.info] is not that frequently updated, so I recommend using Relish's http://www.relishapp.com/rspec[RSpec Documentation] instead.
 
 Relish uses Cucumber scenarios as a documentation format. With this in mind it can be considered the latest documentation. However the Relish documentation is very API like in style, so even if you understand the usage you may not know how to put it to practical use. When I first started with RSpec I wasn't sure about how `let` worked so I added it into my usual test writing habits until it finally stuck. 
 
-These types of problems are more difficult, so the best solution is to Google around or ask someone. Of course there's always figuring it out on your own. If you find it necessary to ask someone for help, asking around in places like Twitter is likely to get an answer. 
+These types of problems are more difficult, so the best solution is to Google around or ask someone. Of course there's always figuring it out on your own. If you find it necessary to ask someone for help, asking around in places like http://www.twitter.com[Twitter] is likely to get an answer. 
+
+== Conclusion ==
+
+I've often heard of RSpec being referred to as difficult or complaints about the syntax being too complicated. The reason for this seems to me that Rubyists are used to thinking in terms of Ruby code, and that there is a gap between that and RSpec DSL. Honestly I believe this comes down to getting accustomed to it. There will always be those who simply cannot grasp how the system works.
+
+For those cases I recommend starting from `describe` and `context`. Being able to utilize them in order to test specifications is sufficient enough in my opinion. Even writing `Test::Unit` like cases inside of `it` statements would be good practice. 
+
+As you progress I believe you will start to feel a need to make test code more DRY compliant. At this point it would be a good idea to start using `subject`, `let`, and `shared_context` to achieve this goal. RSpec is an extremely powerful framework when it comes to writing DRY test code. While RSpec may seem complicated with all the features, taking things in small steps should help in comprehending what's happening. 
+
+The knowledge presented here does not encompass everything I know. There's a lot of other information I'd like to present, but that would take an entire book to cover so I hope you don't mind me leaving it out. I hope that this article provides a useful reference for those wanting to improve their RSpec mastery.
 
 == About The Author ==
+
+Akamatsu Yuki (http://twitter.com/ukstudio[@ukstudio])
+
+Freelance Ruby programmer. Most recent work is development for http://scaleout.jp/[ScaleOut]. Currently in the process of writing an introductory book to TDD in Ruby. If all goes well it will be available sometime next year. Please buy it when it comes out.
 
 == About The Translator ==
 

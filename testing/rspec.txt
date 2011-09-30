@@ -394,11 +394,11 @@ Stack
 
 By using `context` to explicitly declare the value, it is easier to discern that RSpec's output means the last value will be returned. Using a customer matcher, the code will be output as is and is even easier to read.
 
-However, I personally don't take it this far. At most I would worry about the wording of `context`. The reason being that as a programmer, reading the test code is more important than reading the documentation. With this in mind it would seem unreasonable to just read the RSpec output alone. This is why I'm less concerned about sentences in the output looking odd as long as the test code is easy to read.
+However, I personally don't take it this far. At most I would worry about the wording of `context`[[ftm01]]<<ftm01-end,~*1~>>. The reason being that as a programmer, reading the test code is more important than reading the documentation. With this in mind it would seem unreasonable to just read the RSpec output alone. This is why I'm less concerned about sentences in the output looking odd as long as the test code is easy to read.
 
 In conclusion, I recommend using `it` without passing in a string. The strongest reason for this being that mixing strings and test code violates the DRY principle. Also the samples given here are small so the issue with size is not as apparent. However it's normal for test cases to be much more numerous. In these cases leaving out the string results in more compact test code.
 
-While I recommend omitting the string, there are those who feel it is more natural to take the opposite approach. You should use your best judgement, and what is most comfortable to decide which method you agree with. Both have advantages and disadvantages, do there is no strictly correct answer.
+While I recommend omitting the string, there are those who feel it is more natural to take the opposite approach[[ftm02]]<<ftm02-end,~*2~>>. You should use your best judgement, and what is most comfortable to decide which method you agree with. Both have advantages and disadvantages, do there is no strictly correct answer.
 
 [[let]]
 === Data sharing with let ===
@@ -413,7 +413,7 @@ describe 'let' do
 end
 -----
 
-`let` takes the evaluation result of the block passed in, then stores the result in a variable of the same name as the symbol given in the argument. In the above example, the evaluation result of the block is "foo" and the symbol name is `:foo`, so "foo" will be stored in a variable named `foo`. This method utilizes lazy evaluation, so the block won't be evaluated unless explicitly called. Results of the block evaluation will be cached and accessible within the same test case, ensuring that multiple calls will not produce multiple evaluations of the block.
+`let` takes the evaluation result of the block passed in, then stores the result in a variable of the same name as the symbol given in the argument. In the above example, the evaluation result of the block is "foo" and the symbol name is `:foo`, so "foo" will be stored in a variable named `foo`. This method utilizes lazy evaluation[[ftm03]]<<ftm03-end,~*3~>>, so the block won't be evaluated unless explicitly called. Results of the block evaluation will be cached and accessible within the same test case, ensuring that multiple calls will not produce multiple evaluations of the block.
 
 When writing tests, there are often cases where the methods being called are the same, but data is slightly different. Previously this was addressed through writing out the same processing code using `before` inside of `describe` and `context`. Now that there's `let`, we can be a little smarter about how the code is written.
 
@@ -607,3 +607,7 @@ Freelance Ruby programmer. Most recent work is development for http://scaleout.j
 == About The Translator ==
 
 Hello I'm Chris White (http://www.twitter.com/cwgem[@cwgem]), a passionate Rubyist. I've been studying Japanese for many years, and enjoy doing technical translations. As test driven development is very important within the Ruby community, I felt translation of this article would benefit the community as a whole. @ukstudio's article was incredibly insightful and am glad to have translated it! I hope you enjoyed it as much as I did!
+
+[[ftm01-end]]<<ftm01,*1>> I like the usage of custom matchers, but in this use case the definitions would increase too much so I avoid it in this situation +
+[[ftm02-end]]<<ftm02,*2>> Jared Carroll for example http://blog.carbonfive.com/2010/10/21/rspec-best-practices/[RSpec best practices] +
+[[ftm03-end]]<<ftm03,*3>> Edit: there is also a non-lazy version called `let!` +

@@ -281,4 +281,190 @@ describe User, '#create!' do
 end
 -----
 
+=== Passing or not passing strings to it ===
 
+Now then, some of you may have already noticed that the style of how the tests were written changed throughout the article. For instance, `it` can have the string passed to it omitted. When used this way RSpec code such as "it should be nil" can be read like a normal English sentence. 
+
+A common debate regarding RSpec usage is whether or not to pass a string to `it`. I notice that users who tend to constantly use the most up to date versions of RSpec often lean towards leaving out the string. Personally I usually leave the string out and let the RSpec code itself express the tests.
+
+The reason for this is that passing a string to `it` has a similar problem to lacking separation between code and comments. One of the recent trends in writing of good code is the principle of "writing code that can be understood without relying on comments." The logic is that when dealing with code and comments, just modifying one leaves the other inconsistent, violating the principle of DRY (Don't Repeat Yourself). 
+
+The same can be said about RSpec's `it` and passing a string to it. Situations where the string passed to `it` being left as is while the test code is modified happens quite often. Also by constantly passing strings to `it`, the test code becomes much longer.
+
+However, that is not to say that leaving the string out is without problems. For instance, the documentation produced by RSpec's `--format documentation` can become more difficult to read. As an example, in the code from the `Stack` class the "returns the last value" code becomes "should eq 'value1'". This makes it impossible to discern the specification being tested.
+
+[source,text]
+-----
+Stack
+   #pop
+     the stack is empty
+       returns nil
+     the stack contains values
+       returns the last value
+-----
+
+[source,text]
+-----
+Stack
+   #pop
+     the stack is empty
+       should be nil
+     the stack contains values
+       should == value2
+-----
+
+There are a few ways to solve this. One of them is to explicitly indicate the value using `context`. The other is to define a custom matcher.
+
+[source,ruby]
+-----
+RSpec::Matchers.define :be_latest_value do |expected|
+  match do |actual|
+    actual == latest_value
+  end
+end
+
+describe Stack do
+  before { @stack = Stack.new }
+  describe '#pop' do
+    subject { @stack.pop }
+
+    context 'the stack is empty' do
+      it { should be_nil }
+    end
+
+    # Explicitly indicate the value with context
+    context 'the last value of the stack is "value2"' do
+      before do
+        @stack.push 'value1'
+        @stack.push 'value2'
+      end
+
+      it { should eq 'value2' }
+    end
+
+    # Adjust the meaning with a custom matcher
+    context 'The stack contains values' do
+      let(:latest_value) { 'value2' }
+      before do
+        @stack.push 'value1'
+        @stack.push latest_value
+      end
+
+      it { should be_latest_value }
+    end
+  end
+end
+-----
+
+[source,text]
+-----
+Stack
+   #pop
+     the stack is empty
+       should be nil
+     the last value of the stack is "value2"
+       should == value2
+     the stack contains values
+       should be latest value
+-----
+
+By using `context` to explicitly declare the value, it is easier to discern that RSpec's output means the last value will be returned. Using a customer matcher, the code will be output as is and is even easier to read.
+
+However, I personally don't take it this far. At most I would worry about the wording of `context`. The reason being that as a programmer, reading the test code is more important than reading the documentation. With this in mind it would not seem reasonable to just read the RSpec output alone. This is why I'm less concerned about sentences in the output looking odd as long as the test code is easy to read.
+
+In conclusion, I recommend using `it` without passing in a string. The strongest reason for this being that mixing strings and test code violates the DRY principle. Also the samples given here are small so the issue with size is not as apparent. However it's normal for test cases to be much more numerous. In these cases leaving out the string results in more compact test code.
+
+While I recommend omitting the string, there are those who feel it is more natural to not do so. You should use your best judgement and what is most comfortable to decide which method you agree with. Both have advantages and disadvantages, there is no strictly correct answer.
+
+=== Data sharing with let ===
+
+In RSpec there is a function known as `let`. Compared to `subject` and other features, the usage is hard to grasp for a lot of users, so I'll attempt to explain its usage. 
+
+[source,ruby]
+-----
+describe 'let' do
+  let(:foo) { 'foo' }
+  specify { foo.should eq 'foo' }
+end
+-----
+
+`let` takes the evaluation result of the block passed in, then stores the result in a variable of the same name as the symbol name given in the argument. In the above example, the evaluation result of the block is "foo" and the symbol name is `:foo`, so "foo" will be stored in a variable named `foo`. This method utilizes lazy evaluation, so the block won't be evaluated unless explicitly called. Results of the block evaluation will be cached and accessible within the same test case, ensuring that multiple calls will not produce multiple evaluations of the block.
+
+When writing tests, there are often cases where the methods being called are the same, but data is slightly different. Previously this was addressed through writing out the same processing code using `before` inside of `describe` and `context`. Now that there's `let`, we can be a little smarter about how the code is written.
+
+[source,ruby]
+-----
+describe User, '#admin?' do
+  before do
+    @user = User.new(:name => 'jack')
+  end
+  subject { @user }
+  
+  context 'admin' do
+    before do
+      @user.role = Role.new(:role => :admin)
+    end
+
+    it { should be_admin }
+  end
+  
+  context 'not admin' do
+    before do
+      @user.role = Role.new(:role => :normal)
+    end
+    
+    it { should_not be_admin }
+  end
+end
+-----
+
+The `User` class contains a `Role` class, and the return value of the `admin?` method changes depending on the state of the `Role`. This code was written without the use of `let`, instead utilizing `before` and `subject`. The `context` of `admin` and `not admin` differ solely in the arguments passed to the `Role` class constructor.
+
+[source,ruby]
+-----
+describe User, '#admin?' do
+  before do
+    @user = User.new(:name => 'jack')
+    @user.role = Role.new(:role => role)
+  end
+  subject { @user }
+  
+  context 'admin' do
+    let(:role) { :admin }
+    it { should be_admin }
+  end
+  
+  context 'not admin' do
+    let(:role) { :normal }
+    it { should_not be_admin }
+  end
+end
+-----
+
+Since `let` in this manner allows for separation of data, `Role` initialization of can be moved to a single `before`. Compared to the previous code, this version adheres more closely to the DRY principle. It can be considered a more orthodox approach to using `let`.
+
+Of course, `let` can also be used as a simple replacement of instance variables. While this is somewhat a matter of preference, the definition of data can be written more declaratively, making the test code easier to read.
+
+[source,ruby]
+-----
+describe Stack, '#pop' do
+  let(:stack) { Stack.new }
+  subject { stack.pop }
+  
+  context 'the stack is empty' do
+    it { should be_nil }
+  end
+  
+  context 'the stack contains values' do
+    let(:oldest_value) { 'value1' }
+    let(:latest_value) { 'value2' }
+
+    before do
+      stack.push oldest_value
+      stack.push latest_value
+    end
+
+    it { should eq latest_value }
+  end
+end
+-----

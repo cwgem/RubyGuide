@@ -468,3 +468,81 @@ describe Stack, '#pop' do
   end
 end
 -----
+
+=== shared_context ===
+
+As mentioned before, RSpec's `context` is used to separate out the state of the test case. However as `context` is simply an alias of `describe`, it doesn't really do anything by itself. In order to actually implement the context, it is necessary to use `before` and `subject`.
+
+There are often times when the same context cannot be combined into a single context. For example, when the tests for several methods utilize the same context. 
+
+[source,ruby]
+-----
+describe '#method_a' do
+  context '#context_a' do
+    before {} # Not DRY
+  end
+end
+
+describe '#method_b' do
+  context '#context_a' do
+    before {} # Not DRY
+  end
+end
+-----
+
+While it is possible to reverse the nesting of `context` and `describe`, testing of methods often entails running them under different contexts, meaning the methods will be dispersed all over the code.
+
+[source,ruby]
+-----
+context '#context_a' do
+  before {}
+  
+  describe '#method_a' do
+  end
+
+  describe '#method_b' do
+  end
+end
+
+context '#context_b' do
+  before {}
+  
+  describe '#method_a' do
+  end
+  
+  describe '#method_b' do
+  end
+end
+-----
+
+Even though the methods are scattered about, it still appears to be reasonably well organized. However there is a big problem with this. As mentioned before, specifications should be noted in step by step test code. In order to achieve the writing of test code starts with the separation of `describe`. However writing tests in this manner means that the context of the test will come before the description of what is being tested, which is not very natural. For this reason I do not recommend this style.
+
+`shared_context` can be used to solve this issue. As the name states `shared_context` shares the context (state at the time of running the test) between different tests. 
+
+[source,ruby]
+-----
+shared_context 'two items are pushed' do
+  let(:latest_value) { 'value2' }
+  before do
+    @stack = Stack.new
+    @stack.push 'value1'
+    @stack.push latest_value
+  end
+end
+
+describe Stack do
+  describe '#size' do
+    include_context 'two items are pushed'
+    subject { @stack.size }
+    it { should eq 2 }
+  end
+  
+  describe '#pop' do
+    include_context 'two items are pushed'
+    subject { @stack.pop }
+    it { should eq latest_value }
+  end
+end
+-----
+
+

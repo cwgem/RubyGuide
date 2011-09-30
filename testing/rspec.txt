@@ -549,7 +549,16 @@ By using `shared_context` in this manner, shared functionality can be consolidat
 
 == Related Information ==
 
-== About The Author ===
+[NOTE]
+I've left out translation of some content here as it targets Japanese speakers
+
+When using RSpec, an issue that often crops up is wanting to know more about how functionality works, but being unsure about where to start. At times like these the documentation is the best resource. http://www.rspec.info[rspec.info] is not that frequently updated, so I recommend using Relish's http://www.relishapp.com/rspec[RSpec Documentation] instead.
+
+Relish uses Cucumber scenarios as a documentation format. With this in mind it can be considered the latest documentation. However the Relish documentation is very API like in style, so even if you understand the usage you may not know how to put it to practical use. When I first started with RSpec I wasn't sure about how `let` worked so I added it into my usual test writing habits until it finally stuck. 
+
+These types of problems are more difficult, so the best solution is to Google around or ask someone. Of course there's always figuring it out on your own. If you find it necessary to ask someone for help, asking around in places like Twitter is likely to get an answer. 
+
+== About The Author ==
 
 == About The Translator ==
 
